@@ -12,6 +12,8 @@
 namespace Proton\Crud;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Fuel\Fieldset\Form;
+use Fuel\Validation\Validator;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +35,26 @@ abstract class Controller
      * @var EntityManagerInterface
      */
     protected $em;
+
+    /**
+     * @var string
+     */
+    protected $entityClass;
+
+    /**
+     * @var string
+     */
+    protected $formClass = 'Proton\Crud\Form';
+
+    /**
+     * @var string
+     */
+    protected $validationClass = 'Proton\Crud\Validation';
+
+    /**
+     * @var string
+     */
+    protected $hydratorClass = 'Proton\Crud\Hydrator\GeneratedHydrator';
 
     /**
      * @param \Twig_Environment      $twig
@@ -59,7 +81,15 @@ abstract class Controller
      */
     public function create(Request $request, Response $response, array $args)
     {
-        $response->setContent($this->twig->render('create.twig'));
+        $form = new Form;
+
+        $formBuilder = new $this->formClass;
+
+        $formBuilder->build($form);
+
+        $response->setContent($this->twig->render('create.twig', [
+            'form' => $form,
+        ]));
 
         return $response;
     }
@@ -75,7 +105,11 @@ abstract class Controller
      */
     public function processCreate(Request $request, Response $response, array $args)
     {
-        // $val = new Validation;
+        $val = new Validator;
+
+        $validation = new $this->validationClass;
+
+        $validation->populateValidator($val);
 
         $result = $val->run($request->request->all());
 
@@ -83,6 +117,7 @@ abstract class Controller
             $data = $result->getValidated();
 
             $entity = new $this->entityClass;
+            $hydrator = new $this->hydratorClass;
 
             $hydrator->hydrate($entity, $data);
 
@@ -91,6 +126,8 @@ abstract class Controller
 
             return new RedirectResponse('/');
         }
+
+        $response = $this->create($request, $response, $args);
 
         return $response;
     }
@@ -117,6 +154,75 @@ abstract class Controller
         }
 
         throw new NotFoundException;
+    }
+
+    /**
+     * Update controller
+     *
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     */
+    public function update(Request $request, Response $response, array $args)
+    {
+        $form = new Form;
+
+        $formBuilder = new $this->formClass;
+
+        $formBuilder->build($form);
+
+        $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
+
+        $hydrator = new $this->hydratorClass;
+
+        $form->populate($hydrator->extract($entity));
+
+        $response->setContent($this->twig->render('update.twig', [
+            'form'   => $form,
+            'entity' => $entity,
+        ]));
+
+        return $response;
+    }
+
+    /**
+     * Update POST handler
+     *
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     */
+    public function processUpdate(Request $request, Response $response, array $args)
+    {
+        $val = new Validator;
+
+        $validation = new $this->validationClass;
+
+        $validation->populateValidator($val);
+
+        $result = $val->run($request->request->all());
+
+        $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
+
+        if ($result->isValid()) {
+            $data = $result->getValidated();
+
+            $hydrator = new $this->hydratorClass;
+
+            $hydrator->hydrate($entity, $data);
+
+            $this->em->flush();
+
+            return new RedirectResponse('/');
+        }
+
+        $response = $this->update($request, $response, $args);
+
+        return $response;
     }
 
     /**
