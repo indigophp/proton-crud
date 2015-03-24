@@ -245,6 +245,22 @@ abstract class Controller
     }
 
     /**
+     * List controller
+     *
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     */
+    public function index(Request $request, Response $response, array $args)
+    {
+        $response->setContent($this->twig->render('index.twig'));
+
+        return $response;
+    }
+
+    /**
      * Creates a new form
      *
      * @return Form
