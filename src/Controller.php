@@ -14,6 +14,7 @@ namespace Proton\Crud;
 use Doctrine\ORM\EntityManagerInterface;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
+use GeneratedHydrator\Configuration;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,21 +43,6 @@ abstract class Controller
     protected $entityClass;
 
     /**
-     * @var string
-     */
-    protected $formClass = 'Proton\Crud\Form';
-
-    /**
-     * @var string
-     */
-    protected $validationClass = 'Proton\Crud\Validation';
-
-    /**
-     * @var string
-     */
-    protected $hydratorClass = 'Proton\Crud\Hydrator\GeneratedHydrator';
-
-    /**
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      */
@@ -81,17 +67,25 @@ abstract class Controller
      */
     public function create(Request $request, Response $response, array $args)
     {
-        $form = new Form;
-
-        $formBuilder = new $this->formClass;
-
-        $formBuilder->build($form);
+        $form = $this->createCreateForm();
 
         $response->setContent($this->twig->render('create.twig', [
             'form' => $form,
         ]));
 
         return $response;
+    }
+
+    /**
+     * Creates a new form for creation
+     *
+     * @return Form
+     */
+    protected function createCreateForm()
+    {
+        $form = $this->createForm();
+
+        return $form;
     }
 
     /**
@@ -117,9 +111,8 @@ abstract class Controller
             $data = $result->getValidated();
 
             $entity = new $this->entityClass;
-            $hydrator = new $this->hydratorClass;
 
-            $hydrator->hydrate($entity, $data);
+            $this->hydrate($entity, $data);
 
             $this->em->persist($entity);
             $this->em->flush();
@@ -167,17 +160,11 @@ abstract class Controller
      */
     public function update(Request $request, Response $response, array $args)
     {
-        $form = new Form;
-
-        $formBuilder = new $this->formClass;
-
-        $formBuilder->build($form);
+        $form = $this->createUpdateForm();
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
-        $hydrator = new $this->hydratorClass;
-
-        $form->populate($hydrator->extract($entity));
+        $form->populate($this->extract($entity));
 
         $response->setContent($this->twig->render('update.twig', [
             'form'   => $form,
@@ -186,6 +173,19 @@ abstract class Controller
 
         return $response;
     }
+
+    /**
+     * Creates a new form for update
+     *
+     * @return Form
+     */
+    protected function createUpdateForm()
+    {
+        $form = $this->createForm();
+
+        return $form;
+    }
+
 
     /**
      * Update POST handler
@@ -211,9 +211,7 @@ abstract class Controller
         if ($result->isValid()) {
             $data = $result->getValidated();
 
-            $hydrator = new $this->hydratorClass;
-
-            $hydrator->hydrate($entity, $data);
+            $this->hydrate($entity, $data);
 
             $this->em->flush();
 
@@ -244,5 +242,58 @@ abstract class Controller
         }
 
         return new RedirectResponse('/');
+    }
+
+    /**
+     * Creates a new form
+     *
+     * @return Form
+     */
+    protected function createForm()
+    {
+        return new Form;
+    }
+
+    /**
+     * Hydrates data into an entity
+     *
+     * @param object $entity
+     * @param array  $data
+     */
+    protected function hydrate($entity, array $data)
+    {
+        $hydrator = $this->getHydratorFor($entity);
+
+        $hydrator->hydrate($data, $entity);
+    }
+
+    /**
+     * Extracts data from an entity
+     *
+     * @param object $entity
+     *
+     * @return array
+     */
+    protected function extract($entity)
+    {
+        $hydrator = $this->getHydratorFor($entity);
+
+        return $hydrator->extract($entity);
+    }
+
+    /**
+     * Returns a GeneratedHydrator for the object
+     *
+     * @param object $object
+     *
+     * @return GeneratedHydrator
+     */
+    private function getHydratorFor($object)
+    {
+        $class         = get_class($object);
+        $config        = new Configuration($class);
+        $hydratorClass = $config->createFactory()->getHydratorClass();
+
+        return new $hydratorClass;
     }
 }
