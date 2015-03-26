@@ -44,6 +44,11 @@ abstract class Controller
     /**
      * @var string
      */
+    protected $route;
+
+    /**
+     * @var string
+     */
     protected $hydratorClass = 'Proton\Crud\Hydrator\GeneratedHydrator';
 
     /**
@@ -82,6 +87,10 @@ abstract class Controller
 
         if (!isset($this->entityClass)) {
             throw new \LogicException('The variable $entityClass must be set');
+        }
+
+        if (!isset($this->route)) {
+            throw new \LogicException('The variable $route must be set');
         }
 
         if (!class_exists($this->entityClass)) {
@@ -153,7 +162,7 @@ abstract class Controller
             $this->em->persist($entity);
             $this->em->flush();
 
-            return new RedirectResponse('/');
+            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
         }
 
         $request->attributes->set('repopulate', true);
@@ -242,7 +251,7 @@ abstract class Controller
 
             $this->em->flush();
 
-            return new RedirectResponse('/');
+            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
         }
 
         $response = $this->update($request, $response, $args);
@@ -268,7 +277,7 @@ abstract class Controller
             $this->em->flush();
         }
 
-        return new RedirectResponse('/');
+        return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
     }
 
     /**
