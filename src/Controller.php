@@ -228,12 +228,15 @@ abstract class Controller
         $validator = new Validator;
         $this->getValidation()->create($validator);
 
-        $result = $validator->run($request->request->all());
+        $rawData = $request->request->all();
+
+        $result = $validator->run($rawData);
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
         if ($result->isValid()) {
-            $data = $result->getValidated();
+            $fields = $result->getValidated();
+            $data = array_intersect_key($rawData, array_flip($fields));
 
             $this->getHydrator()->hydrate($entity, $data);
 
