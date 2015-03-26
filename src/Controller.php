@@ -77,6 +77,16 @@ abstract class Controller
     protected $validation;
 
     /**
+     * @var array
+     */
+    protected $views = [
+        'create' => 'create.twig',
+        'read'   => 'read.twig',
+        'update' => 'update.twig',
+        'list'   => 'list.twig',
+    ];
+
+    /**
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      */
@@ -126,7 +136,7 @@ abstract class Controller
 
         $this->repopulate($request, $form);
 
-        $response->setContent($this->twig->render('create.twig', [
+        $response->setContent($this->twig->render($this->views['create'], [
             'form' => $form,
         ]));
 
@@ -157,6 +167,10 @@ abstract class Controller
 
             $entity = new $this->entityClass;
 
+            // UGLY WORKAROUND BEGINS
+            $data = array_merge($this->getHydrator()->extract($entity), $data);
+            // UGLY WORKAROUND ENDS
+
             $this->getHydrator()->hydrate($entity, $data);
 
             $this->em->persist($entity);
@@ -186,7 +200,7 @@ abstract class Controller
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
         if ($entity) {
-            $response->setContent($this->twig->render('read.twig', [
+            $response->setContent($this->twig->render($this->views['read'], [
                 'entity' => $entity,
             ]));
 
@@ -214,7 +228,7 @@ abstract class Controller
 
         $form->populate($this->getHydrator()->extract($entity));
 
-        $response->setContent($this->twig->render('update.twig', [
+        $response->setContent($this->twig->render($this->views['update'], [
             'form'   => $form,
             'entity' => $entity,
         ]));
@@ -291,7 +305,7 @@ abstract class Controller
      */
     public function index(Request $request, Response $response, array $args)
     {
-        $response->setContent($this->twig->render('index.twig'));
+        $response->setContent($this->twig->render($this->views['list']));
 
         return $response;
     }
