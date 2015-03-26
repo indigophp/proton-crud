@@ -12,7 +12,6 @@
 namespace Proton\Crud;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Fuel\Fieldset\Builder\Basic;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
 use Fuel\Validation\RuleProvider\FromArray;
@@ -54,6 +53,16 @@ abstract class Controller
     protected $hydrator;
 
     /**
+     * @var string
+     */
+    protected $formBuilderClass = 'Proton\Crud\FormBuilder\EntityMetadata';
+
+    /**
+     * @var FormBuilder
+     */
+    protected $formBuilder;
+
+    /**
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      */
@@ -73,6 +82,10 @@ abstract class Controller
         if (!is_subclass_of($this->hydratorClass, 'Proton\Crud\Hydrator')) {
             throw new \LogicException('The hydrator class must implement Proton\Crud\Hydrator');
         }
+
+        if (!is_subclass_of($this->formBuilderClass, 'Proton\Crud\FormBuilder')) {
+            throw new \LogicException('The form builder class must implement Proton\Crud\FormBuilder');
+        }
     }
 
     /**
@@ -86,7 +99,8 @@ abstract class Controller
      */
     public function create(Request $request, Response $response, array $args)
     {
-        $form = $this->createCreateForm();
+        $form = new Form;
+        $this->getFormBuilder()->create($form);
 
         $this->repopulate($request, $form);
 
@@ -95,18 +109,6 @@ abstract class Controller
         ]));
 
         return $response;
-    }
-
-    /**
-     * Creates a new form for creation
-     *
-     * @return Form
-     */
-    protected function createCreateForm()
-    {
-        $form = $this->createForm();
-
-        return $form;
     }
 
     /**
@@ -194,7 +196,8 @@ abstract class Controller
      */
     public function update(Request $request, Response $response, array $args)
     {
-        $form = $this->createUpdateForm();
+        $form = new Form;
+        $this->getFormBuilder()->update($form);
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
@@ -206,18 +209,6 @@ abstract class Controller
         ]));
 
         return $response;
-    }
-
-    /**
-     * Creates a new form for update
-     *
-     * @return Form
-     */
-    protected function createUpdateForm()
-    {
-        $form = $this->createForm();
-
-        return $form;
     }
 
     /**
@@ -303,33 +294,6 @@ abstract class Controller
     }
 
     /**
-     * Creates a new form
-     *
-     * @return Form
-     */
-    protected function createForm()
-    {
-        $form = new Form;
-        $builder = new Basic;
-
-        $metadata = $this->em->getClassMetadata($this->entityClass);
-        $fields = $metadata->fieldMappings;
-
-        foreach ($fields as $name => $mappings) {
-            if (isset($mappings['options']['form'])) {
-                $data = array_merge([
-                    'name'  => $name,
-                    'label' => isset($mappings['options']['label']) ? $mappings['options']['label'] : null,
-                ], $mappings['options']['form']);
-
-                $form[$name] = $builder->generate([$data])[0];
-            }
-        }
-
-        return $form;
-    }
-
-    /**
      * Tries to repopulate a form after failure
      *
      * @param Request $request
@@ -394,5 +358,36 @@ abstract class Controller
     public function setHydrator(Hydrator $hydrator)
     {
         $this->hydrator = $hydrator;
+    }
+
+    /**
+     * Returns the FormBuilder object and optionally instantiates it
+     *
+     * @return FormBuilder
+     */
+    public function getFormBuilder()
+    {
+        if (!isset($this->formBuilder)) {
+            // TODO: find a better way
+            if (is_subclass_of($this->formBuilderClass, 'Proton\Crud\FormBuilder\EntityMetadata')) {
+                $this->formBuilder = new $this->formBuilderClass($this->em, $this->entityClass);
+            } else {
+                $this->formBuilder = new $this->formBuilderClass;
+            }
+        }
+
+        return $this->formBuilder;
+    }
+
+    /**
+     * Sets a custom FormBuilder
+     *
+     * Useful when the form builder has external dependencies
+     *
+     * @param FormBuilder $formBuilder
+     */
+    public function setFormBuilder(FormBuilder $formBuilder)
+    {
+        $this->formBuilder = $formBuilder;
     }
 }
