@@ -14,7 +14,6 @@ namespace Proton\Crud;
 use Doctrine\ORM\EntityManagerInterface;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
-use Fuel\Validation\RuleProvider\FromArray;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,6 +62,16 @@ abstract class Controller
     protected $formBuilder;
 
     /**
+     * @var string
+     */
+    protected $validationClass = 'Proton\Crud\Validation\EntityMetadata';
+
+    /**
+     * @var Validation
+     */
+    protected $validation;
+
+    /**
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      */
@@ -85,6 +94,10 @@ abstract class Controller
 
         if (!is_subclass_of($this->formBuilderClass, 'Proton\Crud\FormBuilder')) {
             throw new \LogicException('The form builder class must implement Proton\Crud\FormBuilder');
+        }
+
+        if (!is_subclass_of($this->validationClass, 'Proton\Crud\Validation')) {
+            throw new \LogicException('The validation class must implement Proton\Crud\Validation');
         }
     }
 
@@ -112,18 +125,6 @@ abstract class Controller
     }
 
     /**
-     * Creates a new validator for creation
-     *
-     * @return Validator
-     */
-    protected function createCreateValidator()
-    {
-        $validator = $this->createValidator();
-
-        return $validator;
-    }
-
-    /**
      * Create POST handler
      *
      * @param Request  $request
@@ -134,11 +135,12 @@ abstract class Controller
      */
     public function processCreate(Request $request, Response $response, array $args)
     {
-        $val = $this->createCreateValidator();
+        $validator = new Validator;
+        $this->getValidation()->create($validator);
 
         $rawData = $request->request->all();
 
-        $result = $val->run($rawData);
+        $result = $validator->run($rawData);
 
         if ($result->isValid()) {
             $fields = $result->getValidated();
@@ -211,18 +213,6 @@ abstract class Controller
         return $response;
     }
 
-    /**
-     * Creates a new validator for update
-     *
-     * @return Validator
-     */
-    protected function createUpdateValidator()
-    {
-        $validator = $this->createValidator();
-
-        return $validator;
-    }
-
 
     /**
      * Update POST handler
@@ -235,9 +225,10 @@ abstract class Controller
      */
     public function processUpdate(Request $request, Response $response, array $args)
     {
-        $val = $this->createUpdateValidator();
+        $validator = new Validator;
+        $this->getValidation()->create($validator);
 
-        $result = $val->run($request->request->all());
+        $result = $validator->run($request->request->all());
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
@@ -307,34 +298,6 @@ abstract class Controller
     }
 
     /**
-     * Creates a new validator
-     *
-     * @return Validator
-     */
-    protected function createValidator()
-    {
-        $validator = new Validator;
-        $ruleProvider = new FromArray(true);
-
-        $metadata = $this->em->getClassMetadata($this->entityClass);
-        $fields = $metadata->fieldMappings;
-        $data = [];
-
-        foreach ($fields as $name => $mappings) {
-            if (isset($mappings['options']['validation'])) {
-                $data[$name] = [
-                    'label' => isset($mappings['options']['label']) ? $mappings['options']['label'] : null,
-                    'rules' => $mappings['options']['validation'],
-                ];
-            }
-        }
-
-        $ruleProvider->setData($data);
-
-        return $ruleProvider->populateValidator($validator);
-    }
-
-    /**
      * Returns the Hydrator object and optionally instantiates it
      *
      * @return Hydrator
@@ -389,5 +352,36 @@ abstract class Controller
     public function setFormBuilder(FormBuilder $formBuilder)
     {
         $this->formBuilder = $formBuilder;
+    }
+
+    /**
+     * Returns the Validation object and optionally instantiates it
+     *
+     * @return Validation
+     */
+    public function getValidation()
+    {
+        if (!isset($this->validation)) {
+            // TODO: find a better way
+            if (is_subclass_of($this->validationClass, 'Proton\Crud\Validation\EntityMetadata')) {
+                $this->validation = new $this->validationClass($this->em, $this->entityClass);
+            } else {
+                $this->validation = new $this->validationClass;
+            }
+        }
+
+        return $this->validation;
+    }
+
+    /**
+     * Sets a custom Validation
+     *
+     * Useful when the validation has external dependencies
+     *
+     * @param Validation $validation
+     */
+    public function setValidation(Validation $validation)
+    {
+        $this->validation = $validation;
     }
 }
