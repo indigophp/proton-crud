@@ -49,6 +49,11 @@ abstract class Controller
     protected $hydratorClass = 'Proton\Crud\Hydrator\GeneratedHydrator';
 
     /**
+     * @var Hydrator
+     */
+    protected $hydrator;
+
+    /**
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      */
@@ -139,9 +144,7 @@ abstract class Controller
 
             $entity = new $this->entityClass;
 
-            $hydrator = new $this->hydratorClass;
-
-            $hydrator->hydrate($entity, $data);
+            $this->getHydrator()->hydrate($entity, $data);
 
             $this->em->persist($entity);
             $this->em->flush();
@@ -195,9 +198,7 @@ abstract class Controller
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
-        $hydrator = new $this->hydratorClass;
-
-        $form->populate($hydrator->extract($entity));
+        $form->populate($this->getHydrator()->extract($entity));
 
         $response->setContent($this->twig->render('update.twig', [
             'form'   => $form,
@@ -252,9 +253,7 @@ abstract class Controller
         if ($result->isValid()) {
             $data = $result->getValidated();
 
-            $hydrator = new $this->hydratorClass;
-
-            $hydrator->hydrate($entity, $data);
+            $this->getHydrator()->hydrate($entity, $data);
 
             $this->em->flush();
 
@@ -369,5 +368,31 @@ abstract class Controller
         $ruleProvider->setData($data);
 
         return $ruleProvider->populateValidator($validator);
+    }
+
+    /**
+     * Returns the Hydrator object and optionally instantiates it
+     *
+     * @return Hydrator
+     */
+    public function getHydrator()
+    {
+        if (!isset($this->hydrator)) {
+            $this->hydrator = new $this->hydratorClass;
+        }
+
+        return $this->hydrator;
+    }
+
+    /**
+     * Sets a custom Hydrator
+     *
+     * Useful when the hydrator has external dependencies
+     *
+     * @param Hydrator $hydrator
+     */
+    public function setHydrator(Hydrator $hydrator)
+    {
+        $this->hydrator = $hydrator;
     }
 }
