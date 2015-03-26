@@ -16,7 +16,6 @@ use Fuel\Fieldset\Builder\Basic;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
 use Fuel\Validation\RuleProvider\FromArray;
-use GeneratedHydrator\Configuration;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,6 +44,11 @@ abstract class Controller
     protected $entityClass;
 
     /**
+     * @var string
+     */
+    protected $hydratorClass = 'Proton\Crud\Hydrator\GeneratedHydrator';
+
+    /**
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      */
@@ -55,6 +59,14 @@ abstract class Controller
 
         if (!isset($this->entityClass)) {
             throw new \LogicException('The variable $entityClass must be set');
+        }
+
+        if (!class_exists($this->entityClass)) {
+            throw new \LogicException(sprintf('The entity class "%s" does not exist', $this->entityClass));
+        }
+
+        if (!is_subclass_of($this->hydratorClass, 'Proton\Crud\Hydrator')) {
+            throw new \LogicException('The hydrator class must implement Proton\Crud\Hydrator');
         }
     }
 
@@ -127,7 +139,9 @@ abstract class Controller
 
             $entity = new $this->entityClass;
 
-            $this->hydrate($entity, $data);
+            $hydrator = new $this->hydratorClass;
+
+            $hydrator->hydrate($entity, $data);
 
             $this->em->persist($entity);
             $this->em->flush();
@@ -181,7 +195,9 @@ abstract class Controller
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
-        $form->populate($this->extract($entity));
+        $hydrator = new $this->hydratorClass;
+
+        $form->populate($hydrator->extract($entity));
 
         $response->setContent($this->twig->render('update.twig', [
             'form'   => $form,
@@ -236,7 +252,9 @@ abstract class Controller
         if ($result->isValid()) {
             $data = $result->getValidated();
 
-            $this->hydrate($entity, $data);
+            $hydrator = new $this->hydratorClass;
+
+            $hydrator->hydrate($entity, $data);
 
             $this->em->flush();
 
@@ -351,48 +369,5 @@ abstract class Controller
         $ruleProvider->setData($data);
 
         return $ruleProvider->populateValidator($validator);
-    }
-
-    /**
-     * Hydrates data into an entity
-     *
-     * @param object $entity
-     * @param array  $data
-     */
-    protected function hydrate($entity, array $data)
-    {
-        $hydrator = $this->getHydratorFor($entity);
-
-        $hydrator->hydrate($data, $entity);
-    }
-
-    /**
-     * Extracts data from an entity
-     *
-     * @param object $entity
-     *
-     * @return array
-     */
-    protected function extract($entity)
-    {
-        $hydrator = $this->getHydratorFor($entity);
-
-        return $hydrator->extract($entity);
-    }
-
-    /**
-     * Returns a GeneratedHydrator for the object
-     *
-     * @param object $object
-     *
-     * @return GeneratedHydrator
-     */
-    private function getHydratorFor($object)
-    {
-        $class         = get_class($object);
-        $config        = new Configuration($class);
-        $hydratorClass = $config->createFactory()->getHydratorClass();
-
-        return new $hydratorClass;
     }
 }
