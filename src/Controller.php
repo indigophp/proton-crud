@@ -12,8 +12,10 @@
 namespace Proton\Crud;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Fuel\Fieldset\Builder\Basic;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
+use Fuel\Validation\RuleProvider\FromArray;
 use GeneratedHydrator\Configuration;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
@@ -69,6 +71,8 @@ abstract class Controller
     {
         $form = $this->createCreateForm();
 
+        $this->repopulate($request, $form);
+
         $response->setContent($this->twig->render('create.twig', [
             'form' => $form,
         ]));
@@ -89,6 +93,18 @@ abstract class Controller
     }
 
     /**
+     * Creates a new validator for creation
+     *
+     * @return Validator
+     */
+    protected function createCreateValidator()
+    {
+        $validator = $this->createValidator();
+
+        return $validator;
+    }
+
+    /**
      * Create POST handler
      *
      * @param Request  $request
@@ -99,16 +115,15 @@ abstract class Controller
      */
     public function processCreate(Request $request, Response $response, array $args)
     {
-        $val = new Validator;
+        $val = $this->createCreateValidator();
 
-        $validation = new $this->validationClass;
+        $rawData = $request->request->all();
 
-        $validation->populateValidator($val);
-
-        $result = $val->run($request->request->all());
+        $result = $val->run($rawData);
 
         if ($result->isValid()) {
-            $data = $result->getValidated();
+            $fields = $result->getValidated();
+            $data = array_intersect_key($rawData, array_flip($fields));
 
             $entity = new $this->entityClass;
 
@@ -119,6 +134,8 @@ abstract class Controller
 
             return new RedirectResponse('/');
         }
+
+        $request->attributes->set('repopulate', true);
 
         $response = $this->create($request, $response, $args);
 
@@ -186,6 +203,18 @@ abstract class Controller
         return $form;
     }
 
+    /**
+     * Creates a new validator for update
+     *
+     * @return Validator
+     */
+    protected function createUpdateValidator()
+    {
+        $validator = $this->createValidator();
+
+        return $validator;
+    }
+
 
     /**
      * Update POST handler
@@ -198,11 +227,7 @@ abstract class Controller
      */
     public function processUpdate(Request $request, Response $response, array $args)
     {
-        $val = new Validator;
-
-        $validation = new $this->validationClass;
-
-        $validation->populateValidator($val);
+        $val = $this->createUpdateValidator();
 
         $result = $val->run($request->request->all());
 
@@ -267,7 +292,65 @@ abstract class Controller
      */
     protected function createForm()
     {
-        return new Form;
+        $form = new Form;
+        $builder = new Basic;
+
+        $metadata = $this->em->getClassMetadata($this->entityClass);
+        $fields = $metadata->fieldMappings;
+
+        foreach ($fields as $name => $mappings) {
+            if (isset($mappings['options']['form'])) {
+                $data = array_merge([
+                    'name'  => $name,
+                    'label' => isset($mappings['options']['label']) ? $mappings['options']['label'] : null,
+                ], $mappings['options']['form']);
+
+                $form[$name] = $builder->generate([$data])[0];
+            }
+        }
+
+        return $form;
+    }
+
+    /**
+     * Tries to repopulate a form after failure
+     *
+     * @param Request $request
+     * @param Form    $form
+     */
+    protected function repopulate(Request $request, Form $form)
+    {
+        if ($request->attributes->get('repopulate', false)) {
+            $form->populate($request->request->all());
+        }
+    }
+
+    /**
+     * Creates a new validator
+     *
+     * @return Validator
+     */
+    protected function createValidator()
+    {
+        $validator = new Validator;
+        $ruleProvider = new FromArray(true);
+
+        $metadata = $this->em->getClassMetadata($this->entityClass);
+        $fields = $metadata->fieldMappings;
+        $data = [];
+
+        foreach ($fields as $name => $mappings) {
+            if (isset($mappings['options']['validation'])) {
+                $data[$name] = [
+                    'label' => isset($mappings['options']['label']) ? $mappings['options']['label'] : null,
+                    'rules' => $mappings['options']['validation'],
+                ];
+            }
+        }
+
+        $ruleProvider->setData($data);
+
+        return $ruleProvider->populateValidator($validator);
     }
 
     /**
