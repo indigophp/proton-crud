@@ -16,7 +16,8 @@
         "twig/twig": "~1.0",
         "fuelphp/fieldset": "dev-master",
         "fuelphp/validation": "dev-master",
-        "ocramius/generated-hydrator": "~1.0",
+        "indigophp/hydra": "dev-master",
+        "ocramius/code-generator-utils": "~0.3",
         "doctrine/orm": "~2.4"
     },
     "require-dev": {

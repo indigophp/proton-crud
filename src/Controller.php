@@ -49,7 +49,7 @@ abstract class Controller
     /**
      * @var string
      */
-    protected $hydratorClass = 'Proton\Crud\Hydrator\GeneratedHydrator';
+    protected $hydratorClass = 'Indigo\Hydra\Hydrator\Generated';
 
     /**
      * @var Hydrator
