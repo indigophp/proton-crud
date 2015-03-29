@@ -27,46 +27,25 @@ class EntityMetadata implements FormBuilder
     protected $em;
 
     /**
-     * @var string
-     */
-    protected $entityClass;
-
-    /**
      * @param EntityManagerInterface $em
-     * @param string                 $entityClass
      */
-    public function __construct(EntityManagerInterface $em, $entityClass)
+    public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
-        $this->entityClass = $entityClass;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function create(Form $form)
+    public function buildForm(Form $form, array $options = [])
     {
-        $this->build($form);
-    }
+        if (!isset($options['entityClass'])) {
+            throw new \InvalidArgumentException('This type expects an entityClass option passed');
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function update(Form $form)
-    {
-        $this->build($form);
-    }
-
-    /**
-     * Common form building process (adding common elements, etc)
-     *
-     * @param Form $form
-     */
-    protected function build(Form $form)
-    {
         $builder = new Basic;
 
-        $metadata = $this->em->getClassMetadata($this->entityClass);
+        $metadata = $this->em->getClassMetadata($options['entityClass']);
         $fields = $metadata->fieldMappings;
 
         foreach ($fields as $name => $mappings) {

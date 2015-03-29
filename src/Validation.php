@@ -19,16 +19,10 @@ use Fuel\Validation\Validator;
 interface Validation
 {
     /**
-     * Creates a CREATE validator
+     * Builds validation rules
      *
      * @param Validator $validator
+     * @param array     $options
      */
-    public function create(Validator $validator);
-
-    /**
-     * Creates an UPDATE validator
-     *
-     * @param Validator $validator
-     */
-    public function update(Validator $validator);
+    public function buildValidation(Validator $validator, array $options = []);
 }

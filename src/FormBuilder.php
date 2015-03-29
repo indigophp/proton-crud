@@ -19,16 +19,10 @@ use Fuel\Fieldset\Form;
 interface FormBuilder
 {
     /**
-     * Creates a CREATE form
+     * Builds form
      *
-     * @param Form $form
+     * @param Form  $form
+     * @param array $options
      */
-    public function create(Form $form);
-
-    /**
-     * Creates an UPDATE form
-     *
-     * @param Form $form
-     */
-    public function update(Form $form);
+    public function buildForm(Form $form, array $options = []);
 }

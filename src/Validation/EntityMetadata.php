@@ -27,46 +27,25 @@ class EntityMetadata implements Validation
     protected $em;
 
     /**
-     * @var string
-     */
-    protected $entityClass;
-
-    /**
      * @param EntityManagerInterface $em
-     * @param string                 $entityClass
      */
-    public function __construct(EntityManagerInterface $em, $entityClass)
+    public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
-        $this->entityClass = $entityClass;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function create(Validator $validator)
+    protected function buildValidation(Validator $validator, array $options = [])
     {
-        $this->build($validator);
-    }
+        if (!isset($options['entityClass'])) {
+            throw new \InvalidArgumentException('This type expects an entityClass option passed');
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function update(Validator $validator)
-    {
-        $this->build($validator);
-    }
-
-    /**
-     * Common validator building process (adding common elements, etc)
-     *
-     * @param Validator $validator
-     */
-    protected function build(Validator $validator)
-    {
         $ruleProvider = new FromArray(true);
 
-        $metadata = $this->em->getClassMetadata($this->entityClass);
+        $metadata = $this->em->getClassMetadata($options['entityClass']);
         $fields = $metadata->fieldMappings;
         $data = [];
 
