@@ -14,6 +14,8 @@ namespace Proton\Crud;
 use Doctrine\ORM\EntityManagerInterface;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
+use Indigo\Hydra\HydratorAware;
+use Indigo\Hydra\HydratorAcceptor;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,8 +26,10 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-abstract class Controller
+abstract class Controller implements HydratorAware
 {
+    use HydratorAcceptor;
+
     /**
      * @var \Twig_Environment
      */
@@ -52,11 +56,6 @@ abstract class Controller
     protected $hydratorClass = 'Indigo\Hydra\Hydrator\Generated';
 
     /**
-     * @var Hydrator
-     */
-    protected $hydrator;
-
-    /**
      * @var string
      */
     protected $formBuilderClass = 'Proton\Crud\FormBuilder\EntityMetadata';
@@ -75,6 +74,11 @@ abstract class Controller
      * @var Validation
      */
     protected $validation;
+
+    /**
+     * @var string
+     */
+    protected $formTransformerClass = 'Proton\Crud\FormTransformer\EntityMetadata';
 
     /**
      * @var array
@@ -107,8 +111,8 @@ abstract class Controller
             throw new \LogicException(sprintf('The entity class "%s" does not exist', $this->entityClass));
         }
 
-        if (!is_subclass_of($this->hydratorClass, 'Proton\Crud\Hydrator')) {
-            throw new \LogicException('The hydrator class must implement Proton\Crud\Hydrator');
+        if (!is_subclass_of($this->hydratorClass, 'Indigo\Hydra\Hydrator')) {
+            throw new \LogicException('The hydrator class must implement Indigo\Hydra\Hydrator');
         }
 
         if (!is_subclass_of($this->formBuilderClass, 'Proton\Crud\FormBuilder')) {
@@ -117,6 +121,10 @@ abstract class Controller
 
         if (!is_subclass_of($this->validationClass, 'Proton\Crud\Validation')) {
             throw new \LogicException('The validation class must implement Proton\Crud\Validation');
+        }
+
+        if (!is_subclass_of($this->formTransformerClass, 'Proton\Crud\FormTransformer')) {
+            throw new \LogicException('The form transformer class must implement Proton\Crud\FormTransformer');
         }
     }
 
@@ -170,6 +178,9 @@ abstract class Controller
             // UGLY WORKAROUND BEGINS
             $data = array_merge($this->getHydrator()->extract($entity), $data);
             // UGLY WORKAROUND ENDS
+
+            $formTransformer = $this->getFormTransformer();
+            $data = $formTransformer->transformToInternal($data);
 
             $this->getHydrator()->hydrate($entity, $data);
 
@@ -226,7 +237,12 @@ abstract class Controller
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
-        $form->populate($this->getHydrator()->extract($entity));
+        $data = $this->getHydrator()->extract($entity);
+
+        $formTransformer = $this->getFormTransformer();
+        $data = $formTransformer->transformToDisplay($data);
+
+        $form->populate($data);
 
         $response->setContent($this->twig->render($this->views['update'], [
             'form'   => $form,
@@ -260,6 +276,13 @@ abstract class Controller
         if ($result->isValid()) {
             $fields = $result->getValidated();
             $data = array_intersect_key($rawData, array_flip($fields));
+
+            $formTransformer = $this->getFormTransformer();
+            $data = $formTransformer->transformToInternal($data);
+
+            // UGLY WORKAROUND BEGINS
+            $data = array_merge($this->getHydrator()->extract($entity), $data);
+            // UGLY WORKAROUND ENDS
 
             $this->getHydrator()->hydrate($entity, $data);
 
@@ -324,9 +347,7 @@ abstract class Controller
     }
 
     /**
-     * Returns the Hydrator object and optionally instantiates it
-     *
-     * @return Hydrator
+     * {@inheritdoc}
      */
     public function getHydrator()
     {
@@ -338,18 +359,6 @@ abstract class Controller
     }
 
     /**
-     * Sets a custom Hydrator
-     *
-     * Useful when the hydrator has external dependencies
-     *
-     * @param Hydrator $hydrator
-     */
-    public function setHydrator(Hydrator $hydrator)
-    {
-        $this->hydrator = $hydrator;
-    }
-
-    /**
      * Returns the FormBuilder object and optionally instantiates it
      *
      * @return FormBuilder
@@ -358,7 +367,7 @@ abstract class Controller
     {
         if (!isset($this->formBuilder)) {
             // TODO: find a better way
-            if (is_subclass_of($this->formBuilderClass, 'Proton\Crud\FormBuilder\EntityMetadata')) {
+            if ($this->isInstanceOf($this->formBuilderClass, 'Proton\Crud\FormBuilder\EntityMetadata')) {
                 $this->formBuilder = new $this->formBuilderClass($this->em, $this->entityClass);
             } else {
                 $this->formBuilder = new $this->formBuilderClass;
@@ -389,7 +398,7 @@ abstract class Controller
     {
         if (!isset($this->validation)) {
             // TODO: find a better way
-            if (is_subclass_of($this->validationClass, 'Proton\Crud\Validation\EntityMetadata')) {
+            if ($this->isInstanceOf($this->validationClass, 'Proton\Crud\Validation\EntityMetadata')) {
                 $this->validation = new $this->validationClass($this->em, $this->entityClass);
             } else {
                 $this->validation = new $this->validationClass;
@@ -409,5 +418,49 @@ abstract class Controller
     public function setValidation(Validation $validation)
     {
         $this->validation = $validation;
+    }
+
+    /**
+     * Returns the Form Transformer object and optionally instantiates it
+     *
+     * @return FormTransformer
+     */
+    public function getFormTransformer()
+    {
+        if (!isset($this->formTransformer)) {
+            // TODO: find a better way
+            if ($this->isInstanceOf($this->formTransformerClass, 'Proton\Crud\FormTransformer\EntityMetadata')) {
+                $this->formTransformer = new $this->formTransformerClass($this->em, $this->entityClass);
+            } else {
+                $this->formTransformer = new $this->formTransformerClass;
+            }
+        }
+
+        return $this->formTransformer;
+    }
+
+    /**
+     * Sets a custom Form Transformer
+     *
+     * Useful when the form transformer has external dependencies
+     *
+     * @param FormTransformer $formTransformer
+     */
+    public function setFormTransformer(FormTransformer $formTransformer)
+    {
+        $this->formTransformer = $formTransformer;
+    }
+
+    /**
+     * Checks if a class is instance of another
+     *
+     * @param string  $class
+     * @param string  $parent
+     *
+     * @return boolean
+     */
+    protected function isInstanceOf($class, $parent)
+    {
+        return $class === $parent or is_subclass_of($class, $parent);
     }
 }
