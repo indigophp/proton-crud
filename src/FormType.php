@@ -11,18 +11,25 @@
 
 namespace Proton\Crud;
 
+use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
 
 /**
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-interface Validation
+interface FormType
 {
     /**
-     * Builds validation rules
+     * Builds a form
+     *
+     * @param Form $form
+     */
+    public function buildForm(Form $form);
+
+    /**
+     * Builds a validation
      *
      * @param Validator $validator
-     * @param array     $options
      */
-    public function buildValidation(Validator $validator, array $options = []);
+    public function buildValidation(Validator $validator);
 }

@@ -27,10 +27,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-abstract class Controller implements HydratorAware
+abstract class Controller
 {
-    use HydratorAcceptor;
-
     /**
      * @var \Twig_Environment
      */
@@ -52,14 +50,9 @@ abstract class Controller implements HydratorAware
     protected $route;
 
     /**
-     * @var FormBuilder
+     * @var Hydrator
      */
-    protected $formBuilder;
-
-    /**
-     * @var Validation
-     */
-    protected $validation;
+    protected $hydrator;
 
     /**
      * @var array
@@ -75,24 +68,15 @@ abstract class Controller implements HydratorAware
      * @param \Twig_Environment      $twig
      * @param EntityManagerInterface $em
      * @param Hydrator               $hydrator
-     * @param FormBuilder            $formBuilder
-     * @param Validation             $validation
-     * @param FormTransformer        $formTransformer
      */
     public function __construct(
         \Twig_Environment $twig,
         EntityManagerInterface $em,
-        Hydrator $hydrator,
-        FormBuilder $formBuilder,
-        Validation $validation,
-        FormTransformer $formTransformer
+        Hydrator $hydrator
     ) {
         $this->twig = $twig;
         $this->em = $em;
         $this->hydrator = $hydrator;
-        $this->formBuilder = $formBuilder;
-        $this->validation = $validation;
-        $this->formTransformer = $formTransformer;
 
         if (!isset($this->entityClass)) {
             throw new \LogicException('The variable $entityClass must be set');
@@ -371,18 +355,5 @@ abstract class Controller implements HydratorAware
         $response->setContent($this->twig->render($this->views['list']));
 
         return $response;
-    }
-
-    /**
-     * Tries to repopulate a form after failure
-     *
-     * @param Request $request
-     * @param Form    $form
-     */
-    protected function repopulate(Request $request, Form $form)
-    {
-        if ($request->attributes->get('repopulate', false)) {
-            $form->populate($request->request->all());
-        }
     }
 }
