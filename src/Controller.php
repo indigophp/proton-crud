@@ -14,9 +14,6 @@ namespace Proton\Crud;
 use Doctrine\ORM\EntityManagerInterface;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
-use Indigo\Hydra\Hydrator;
-use Indigo\Hydra\HydratorAware;
-use Indigo\Hydra\HydratorAcceptor;
 use League\Route\Http\Exception\NotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,9 +32,9 @@ abstract class Controller
     protected $twig;
 
     /**
-     * @var EntityManagerInterface
+     * @var CommandBus
      */
-    protected $em;
+    protected $commandBus;
 
     /**
      * @var string
@@ -50,11 +47,6 @@ abstract class Controller
     protected $route;
 
     /**
-     * @var Hydrator
-     */
-    protected $hydrator;
-
-    /**
      * @var array
      */
     protected $views = [
@@ -65,18 +57,15 @@ abstract class Controller
     ];
 
     /**
-     * @param \Twig_Environment      $twig
-     * @param EntityManagerInterface $em
-     * @param Hydrator               $hydrator
+     * @param \Twig_Environment $twig
+     * @param CommandBus        $em
      */
     public function __construct(
         \Twig_Environment $twig,
-        EntityManagerInterface $em,
-        Hydrator $hydrator
+        CommandBus $commandBus
     ) {
         $this->twig = $twig;
-        $this->em = $em;
-        $this->hydrator = $hydrator;
+        $this->commandBus = $commandBus;
 
         if (!isset($this->entityClass)) {
             throw new \LogicException('The variable $entityClass must be set');
