@@ -15,6 +15,7 @@
         "alexbilbie/proton": "~1.0",
         "twig/twig": "~1.0",
         "league/tactician": "^0.4",
+        "league/tactician-container": "dev-master",
         "fuelphp/fieldset": "dev-master",
         "fuelphp/validation": "dev-master",
         "indigophp/hydra": "dev-master",
