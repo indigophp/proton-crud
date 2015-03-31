@@ -13,6 +13,7 @@ namespace Proton\Crud;
 
 use League\Container\ServiceProvider;
 use League\Tactician\Container\ContainerLocator;
+
 /**
  * Provides CRUD services
  *
@@ -34,7 +35,11 @@ class CrudServiceProvider extends ServiceProvider
      * @var array
      */
     protected $handlerMap = [
-        'Proton\Crud\Query\FindEntity' => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
+        'Proton\Crud\Command\CreateEntity' => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
+        'Proton\Crud\Command\UpdateEntity' => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
+        'Proton\Crud\Command\DeleteEntity' => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
+        'Proton\Crud\Query\FindEntity'     => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
+        'Proton\Crud\Query\LoadEntity'     => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
     ];
 
     public function register()
@@ -47,5 +52,9 @@ class CrudServiceProvider extends ServiceProvider
         });
 
         $this->getContainer()->add('crud.command_inflector', 'League\Tactician\Handler\MethodNameInflector\HandleInflector');
+        $this->getContainer()->add('crud.command_middleware', 'League\Tactician\Handler\CommandHandlerMiddleware', [
+            'crud.command_locator',
+            'crud.command_inflector',
+        ]);
     }
 }

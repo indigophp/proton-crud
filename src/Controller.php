@@ -93,7 +93,9 @@ abstract class Controller
     {
         $form = $this->createCreateForm();
 
-        $this->repopulate($request, $form);
+        if ($request->attributes->get('repopulate', false)) {
+            $form->populate($request->request->all());
+        }
 
         $response->setContent($this->twig->render($this->views['create'], [
             'form' => $form,
@@ -107,17 +109,14 @@ abstract class Controller
      *
      * @return Form
      */
-    public function createCreateForm()
-    {
-        $form = new Form;
-        $form->setAttribute('method', 'POST');
+    abstract protected function createCreateForm();
 
-        $this->formBuilder->create($form, [
-            'entityClass' => $this->entityClass,
-        ]);
-
-        return $form;
-    }
+    /**
+     * Creates validation
+     *
+     * @return Validator
+     */
+    abstract protected function createValidator();
 
     /**
      * CREATE handler
@@ -130,7 +129,7 @@ abstract class Controller
      */
     public function processCreate(Request $request, Response $response, array $args)
     {
-        $validator = $this->createCreateValidator();
+        $validator = $this->createValidator();
 
         $rawData = $request->request->all();
 
@@ -140,19 +139,9 @@ abstract class Controller
             $fields = $result->getValidated();
             $data = array_intersect_key($rawData, array_flip($fields));
 
-            $formTransformer = $this->getFormTransformer();
-            $data = $formTransformer->transformToInternal($data);
+            $command = new Command\CreateEntity($this->entityClass, $data);
 
-            $entity = new $this->entityClass;
-
-            // UGLY WORKAROUND BEGINS
-            $data = array_merge($this->hydrator->extract($entity), $data);
-            // UGLY WORKAROUND ENDS
-
-            $this->hydrator->hydrate($entity, $data);
-
-            $this->em->persist($entity);
-            $this->em->flush();
+            $this->commandBus->handle($command);
 
             return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
         }
@@ -162,22 +151,6 @@ abstract class Controller
         $response = $this->create($request, $response, $args);
 
         return $response;
-    }
-
-    /**
-     * CREATE validation
-     *
-     * @return Validator
-     */
-    public function createCreateValidator()
-    {
-        $validator = new Validator;
-
-        $this->validation->buildValidation($validator, $entity, [
-            'entityClass' => $this->entityClass,
-        ]);
-
-        return $validator;
     }
 
     /**
@@ -191,7 +164,9 @@ abstract class Controller
      */
     public function read(Request $request, Response $response, array $args)
     {
-        $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
+        $query = new Query\FindEntity($this->entityClass, $args['id']);
+
+        $entity = $this->commandBus->handle($query);
 
         if ($entity) {
             $response->setContent($this->twig->render($this->views['read'], [
@@ -217,12 +192,9 @@ abstract class Controller
     {
         $form = $this->createUpdateForm();
 
-        $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
+        $query = new Query\LoadEntity($this->entityClass, $data);
 
-        $data = $this->hydrator->extract($entity);
-
-        $formTransformer = $this->getFormTransformer();
-        $data = $formTransformer->transformToDisplay($data);
+        $data = $this->commandBus->handle($query);
 
         $form->populate($data);
 
@@ -239,17 +211,7 @@ abstract class Controller
      *
      * @return Form
      */
-    public function createUpdateForm()
-    {
-        $form = new Form;
-        $form->setAttribute('method', 'PUT');
-
-        $this->formBuilder->create($form, [
-            'entityClass' => $this->entityClass,
-        ]);
-
-        return $form;
-    }
+    abstract protected function createUpdateForm();
 
     /**
      * UPDATE handler
@@ -274,16 +236,9 @@ abstract class Controller
             $fields = $result->getValidated();
             $data = array_intersect_key($rawData, array_flip($fields));
 
-            $formTransformer = $this->getFormTransformer();
-            $data = $formTransformer->transformToInternal($data);
+            $command = new Command\UpdateEntity($entity, $data);
 
-            // UGLY WORKAROUND BEGINS
-            $data = array_merge($this->getHydrator()->extract($entity), $data);
-            // UGLY WORKAROUND ENDS
-
-            $this->getHydrator()->hydrate($entity, $data);
-
-            $this->em->flush();
+            $this->commandBus->handle($command);
 
             return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
         }
@@ -320,11 +275,14 @@ abstract class Controller
      */
     public function delete(Request $request, Response $response, array $args)
     {
-        $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
+        $query = new Query\FindEntity($this->entityClass, $args['id']);
+
+        $entity = $this->commandBus->handle($query);
 
         if ($entity) {
-            $this->em->remove($entity);
-            $this->em->flush();
+            $command = new Command\DeleteEntity($entity);
+
+            $this->commandBus->handle($command);
         }
 
         return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
