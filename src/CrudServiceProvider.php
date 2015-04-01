@@ -35,11 +35,12 @@ class CrudServiceProvider extends ServiceProvider
      * @var array
      */
     protected $handlerMap = [
-        'Proton\Crud\Command\CreateEntity' => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
-        'Proton\Crud\Command\UpdateEntity' => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
-        'Proton\Crud\Command\DeleteEntity' => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
-        'Proton\Crud\Query\FindEntity'     => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
-        'Proton\Crud\Query\LoadEntity'     => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
+        'Proton\Crud\Command\CreateEntity'  => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
+        'Proton\Crud\Command\UpdateEntity'  => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
+        'Proton\Crud\Command\DeleteEntity'  => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
+        'Proton\Crud\Query\FindEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
+        'Proton\Crud\Query\FindAllEntities' => 'Proton\Crud\QueryHandler\DoctrineAllEntityFinder',
+        'Proton\Crud\Query\LoadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
     ];
 
     public function register()

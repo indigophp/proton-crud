@@ -11,6 +11,7 @@
 
 namespace Proton\Crud\QueryHandler;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Indigo\Hydra\Hydrator;
 use Proton\Crud\Query\LoadEntity;
 

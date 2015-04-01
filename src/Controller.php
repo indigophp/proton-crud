@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
 use League\Route\Http\Exception\NotFoundException;
+use League\Tactician\CommandBus;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -192,7 +193,7 @@ abstract class Controller
     {
         $form = $this->createUpdateForm();
 
-        $query = new Query\LoadEntity($this->entityClass, $data);
+        $query = new Query\LoadEntity($this->entityClass, $args['id']);
 
         $data = $this->commandBus->handle($query);
 
@@ -224,13 +225,15 @@ abstract class Controller
      */
     public function processUpdate(Request $request, Response $response, array $args)
     {
-        $validator = $this->createUpdateValidator();
+        $validator = $this->createValidator();
 
         $rawData = $request->request->all();
 
         $result = $validator->run($rawData);
 
-        $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
+        $query = new Query\FindEntity($this->entityClass, $args['id']);
+
+        $entity = $this->commandBus->handle($query);
 
         if ($result->isValid()) {
             $fields = $result->getValidated();
@@ -246,22 +249,6 @@ abstract class Controller
         $response = $this->update($request, $response, $args);
 
         return $response;
-    }
-
-    /**
-     * UPDATE validation
-     *
-     * @return Validator
-     */
-    public function createUpdateValidator()
-    {
-        $validator = new Validator;
-
-        $this->validation->buildValidation($validator, $entity, [
-            'entityClass' => $this->entityClass,
-        ]);
-
-        return $validator;
     }
 
     /**
