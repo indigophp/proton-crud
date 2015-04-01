@@ -12,22 +12,24 @@
 namespace Proton\Crud;
 
 use League\Container\ServiceProvider;
-use League\Tactician\Container\ContainerLocator;
+use League\Tactician\CommandBus;
 
 /**
  * Provides CRUD services
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class CrudServiceProvider extends ServiceProvider
+abstract class CrudServiceProvider extends ServiceProvider
 {
     /**
-     * @var array
+     * @var string
      */
-    protected $provides = [
-        'crud.command_locator',
-        'crud.command_inflector',
-    ];
+    protected $serviceName;
+
+    /**
+     * @var string
+     */
+    protected $controller;
 
     /**
      * Provides handler map
@@ -43,19 +45,40 @@ class CrudServiceProvider extends ServiceProvider
         'Proton\Crud\Query\LoadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
     ];
 
+    public function __construct()
+    {
+        if (!isset($this->serviceName)) {
+            throw new \LogicException('Service name must be set');
+        }
+
+        if (!isset($this->controller)) {
+            throw new \LogicException('Controller must be set');
+        }
+
+        $this->provides = [
+            $this->serviceName.'.command_bus',
+            $this->serviceName.'.controller',
+        ];
+    }
+
     public function register()
     {
-        $this->getContainer()->add('crud.command_locator', function() {
-            return new ContainerLocator(
-                $this->getContainer(),
-                $this->handlerMap
-            );
-        });
+        $this->getContainer()->add($this->serviceName.'.command_locator', 'League\Tactician\Container\ContainerLocator')
+            ->withArgument('League\Container\Container')
+            ->withArgument($this->handlerMap);
 
-        $this->getContainer()->add('crud.command_inflector', 'League\Tactician\Handler\MethodNameInflector\HandleInflector');
-        $this->getContainer()->add('crud.command_middleware', 'League\Tactician\Handler\CommandHandlerMiddleware', [
-            'crud.command_locator',
-            'crud.command_inflector',
-        ]);
+        $this->getContainer()->add($this->serviceName.'.command_inflector', 'League\Tactician\Handler\MethodNameInflector\HandleInflector');
+        $this->getContainer()->add($this->serviceName.'.command_middleware', 'League\Tactician\Handler\CommandHandlerMiddleware')
+            ->withArgument($this->serviceName.'.command_locator')
+            ->withArgument($this->serviceName.'.command_inflector');
+
+        $this->getContainer()->add($this->serviceName.'.command_bus', function() {
+            return new CommandBus(func_get_args());
+        })
+        ->withArgument($this->serviceName.'.command_middleware');
+
+        $this->getContainer()->add($this->serviceName.'.controller', $this->controller)
+            ->withArgument('Twig_Environment')
+            ->withArgument($this->serviceName.'.command_bus');
     }
 }
