@@ -11,7 +11,7 @@
 
 namespace Proton\Crud\Command;
 
-use Tactician\CommandBus\Plugins\NamedCommand\NamedCommand;
+use League\Tactician\Plugins\NamedCommand\NamedCommand;
 use Proton\Crud\Configuration;
 use Proton\Crud\ConfigurationAwareCommand;
 
