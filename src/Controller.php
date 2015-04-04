@@ -61,11 +61,6 @@ abstract class Controller
         $this->twig = $twig;
         $this->commandBus = $commandBus;
         $this->config = $config;
-
-
-        if (!isset($this->route)) {
-            throw new \LogicException('The variable $route must be set');
-        }
     }
 
     /**
@@ -131,7 +126,7 @@ abstract class Controller
 
             $this->commandBus->handle($command);
 
-            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
+            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->config->getRoute()));
         }
 
         $request->attributes->set('repopulate', true);
@@ -230,7 +225,7 @@ abstract class Controller
 
             $this->commandBus->handle($command);
 
-            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
+            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->config->getRoute()));
         }
 
         $response = $this->update($request, $response, $args);
@@ -259,7 +254,7 @@ abstract class Controller
             $this->commandBus->handle($command);
         }
 
-        return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->route));
+        return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->config->getRoute()));
     }
 
     /**
