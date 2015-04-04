@@ -37,16 +37,19 @@ abstract class CrudProvider extends ServiceProvider
     public function register()
     {
         $handlers = $this->config->getHandlerMap();
-        $handlers = array_flip($handlers);
 
-        foreach ($handlers as $handler => &$commandOrQuery) {
-            $commandOrQuery = $this->config->getServiceName().$commandOrQuery;
+        if (count($handlers) > 0) {
+            $handlers = array_flip($handlers);
+
+            foreach ($handlers as $handler => &$commandOrQuery) {
+                $commandOrQuery = $this->config->getServiceName().$commandOrQuery;
+            }
+
+            $handlers = array_flip($handlers);
+
+            $this->getContainer()->extend('crud.command_locator')
+                ->withMethodCall('addHandlers', [$handlers]);
         }
-
-        $handlers = array_flip($handlers);
-
-        $this->getContainer()->extend('crud.command_locator')
-            ->withMethodCall('addHandlers', [$handlers]);
 
         $this->getContainer()->add($this->config->getServiceName().'.controller', $this->config->getControllerClass())
             ->withArgument('Twig_Environment')

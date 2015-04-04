@@ -41,14 +41,7 @@ class Configuration
     /**
      * @var array
      */
-    protected $handlerMap = [
-        'createEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
-        'updateEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
-        'deleteEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
-        'findEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
-        'findAllEntities' => 'Proton\Crud\QueryHandler\DoctrineAllEntityFinder',
-        'loadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
-    ];
+    protected $handlerMap = [];
 
     /**
      * @var array

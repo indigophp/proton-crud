@@ -54,6 +54,7 @@ class CrudServiceProvider extends ServiceProvider
 
         $this->getContainer()->add('crud.command_inflector', 'League\Tactician\Handler\MethodNameInflector\HandleInflector');
         $this->getContainer()->add('crud.command_middleware', 'League\Tactician\Handler\CommandHandlerMiddleware')
+            ->withArgument('League\Tactician\Plugins\NamedCommand\NamedCommandExtractor')
             ->withArgument('crud.command_locator')
             ->withArgument('crud.command_inflector');
 
