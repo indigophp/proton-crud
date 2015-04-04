@@ -29,6 +29,6 @@ class DoctrineAllEntityFinder extends EntityManagerAware
      */
     public function handle(FindAllEntities $query)
     {
-        return $this->em->getRepository($query->getEntityClass())->findAll();
+        return $this->em->getRepository($query->getConfig()->getEntityClass())->findAll();
     }
 }

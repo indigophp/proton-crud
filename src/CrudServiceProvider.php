@@ -19,66 +19,47 @@ use League\Tactician\CommandBus;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-abstract class CrudServiceProvider extends ServiceProvider
+class CrudServiceProvider extends ServiceProvider
 {
     /**
-     * @var string
+     * @var array
      */
-    protected $serviceName;
+    protected $provides = [
+        'crud.command_locator',
+        'crud.command_bus',
+    ];
 
     /**
-     * @var string
-     */
-    protected $controller;
-
-    /**
-     * Provides handler map
+     * Provides the default handler map
      *
      * @var array
      */
-    protected $handlerMap = [
-        'Proton\Crud\Command\CreateEntity'  => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
-        'Proton\Crud\Command\UpdateEntity'  => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
-        'Proton\Crud\Command\DeleteEntity'  => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
-        'Proton\Crud\Query\FindEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
-        'Proton\Crud\Query\FindAllEntities' => 'Proton\Crud\QueryHandler\DoctrineAllEntityFinder',
-        'Proton\Crud\Query\LoadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
+    protected $defaultHandlerMap = [
+        'crud.createEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
+        'crud.updateEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
+        'crud.deleteEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
+        'crud.findEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
+        'crud.findAllEntities' => 'Proton\Crud\QueryHandler\DoctrineAllEntityFinder',
+        'crud.loadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
     ];
 
-    public function __construct()
-    {
-        if (!isset($this->serviceName)) {
-            throw new \LogicException('Service name must be set');
-        }
-
-        if (!isset($this->controller)) {
-            throw new \LogicException('Controller must be set');
-        }
-
-        $this->provides = [
-            $this->serviceName.'.command_bus',
-            $this->serviceName.'.controller',
-        ];
-    }
-
+    /**
+     * {@inheritdoc}
+     */
     public function register()
     {
-        $this->getContainer()->add($this->serviceName.'.command_locator', 'League\Tactician\Container\ContainerLocator')
+        $this->getContainer()->add('crud.command_locator', 'League\Tactician\Container\ContainerLocator')
             ->withArgument('League\Container\Container')
-            ->withArgument($this->handlerMap);
+            ->withArgument($this->defaultHandlerMap);
 
-        $this->getContainer()->add($this->serviceName.'.command_inflector', 'League\Tactician\Handler\MethodNameInflector\HandleInflector');
-        $this->getContainer()->add($this->serviceName.'.command_middleware', 'League\Tactician\Handler\CommandHandlerMiddleware')
-            ->withArgument($this->serviceName.'.command_locator')
-            ->withArgument($this->serviceName.'.command_inflector');
+        $this->getContainer()->add('crud.command_inflector', 'League\Tactician\Handler\MethodNameInflector\HandleInflector');
+        $this->getContainer()->add('crud.command_middleware', 'League\Tactician\Handler\CommandHandlerMiddleware')
+            ->withArgument('crud.command_locator')
+            ->withArgument('crud.command_inflector');
 
-        $this->getContainer()->add($this->serviceName.'.command_bus', function() {
+        $this->getContainer()->add('crud.command_bus', function() {
             return new CommandBus(func_get_args());
         })
-        ->withArgument($this->serviceName.'.command_middleware');
-
-        $this->getContainer()->add($this->serviceName.'.controller', $this->controller)
-            ->withArgument('Twig_Environment')
-            ->withArgument($this->serviceName.'.command_bus');
+        ->withArgument('crud.command_middleware');
     }
 }

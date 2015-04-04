@@ -11,13 +11,19 @@
 
 namespace Proton\Crud\Command;
 
+use Tactician\CommandBus\Plugins\NamedCommand\NamedCommand;
+use Proton\Crud\Configuration;
+use Proton\Crud\ConfigurationAwareCommand;
+
 /**
  * Updates an entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class UpdateEntity
+class UpdateEntity implements NamedCommand
 {
+    use ConfigurationAwareCommand;
+
     /**
      * Entity object
      *
@@ -31,11 +37,13 @@ class UpdateEntity
     protected $data;
 
     /**
-     * @param object  $entity
-     * @param integer $array
+     * @param Configuration $config
+     * @param object        $entity
+     * @param array         $data
      */
-    public function __construct($entity, $data)
+    public function __construct(Configuration $config, $entity, array $data)
     {
+        $this->config = $config;
         $this->entity = $entity;
         $this->data = $data;
     }

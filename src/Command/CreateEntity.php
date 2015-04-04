@@ -11,19 +11,18 @@
 
 namespace Proton\Crud\Command;
 
+use Tactician\CommandBus\Plugins\NamedCommand\NamedCommand;
+use Proton\Crud\Configuration;
+use Proton\Crud\ConfigurationAwareCommand;
+
 /**
  * Creates a new entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class CreateEntity
+class CreateEntity implements NamedCommand
 {
-    /**
-     * Entity class
-     *
-     * @var string
-     */
-    protected $entityClass;
+    use ConfigurationAwareCommand;
 
     /**
      * @var array
@@ -31,23 +30,13 @@ class CreateEntity
     protected $data;
 
     /**
-     * @param string  $entityClass
-     * @param integer $array
+     * @param Configuration $config
+     * @param array         $data
      */
-    public function __construct($entityClass, $data)
+    public function __construct(Configuration $config, array $data)
     {
-        $this->entityClass = $entityClass;
+        $this->config = $config;
         $this->data = $data;
-    }
-
-    /**
-     * Returns the entity class name
-     *
-     * @return string
-     */
-    public function getEntityClass()
-    {
-        return $this->entityClass;
     }
 
     /**

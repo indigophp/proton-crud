@@ -11,13 +11,19 @@
 
 namespace Proton\Crud\Command;
 
+use Tactician\CommandBus\Plugins\NamedCommand\NamedCommand;
+use Proton\Crud\Configuration;
+use Proton\Crud\ConfigurationAwareCommand;
+
 /**
  * Deletes an entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DeleteEntity
+class DeleteEntity implements NamedCommand
 {
+    use ConfigurationAwareCommand;
+
     /**
      * Entity object
      *
@@ -26,10 +32,12 @@ class DeleteEntity
     protected $entity;
 
     /**
-     * @param object  $entity
+     * @param Configuration $config
+     * @param object        $entity
      */
-    public function __construct($entity)
+    public function __construct(Configuration $config, $entity)
     {
+        $this->config = $config;
         $this->entity = $entity;
     }
 

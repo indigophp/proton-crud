@@ -11,19 +11,18 @@
 
 namespace Proton\Crud\Query;
 
+use Tactician\CommandBus\Plugins\NamedCommand\NamedCommand;
+use Proton\Crud\Configuration;
+use Proton\Crud\ConfigurationAwareCommand;
+
 /**
  * Finds an entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class FindEntity
+class FindEntity implements NamedCommand
 {
-    /**
-     * Entity class
-     *
-     * @var string
-     */
-    protected $entityClass;
+    use ConfigurationAwareCommand;
 
     /**
      * @var integer
@@ -31,23 +30,13 @@ class FindEntity
     protected $id;
 
     /**
-     * @param string  $entityClass
-     * @param integer $id
+     * @param Configuration $config
+     * @param integer       $id
      */
-    public function __construct($entityClass, $id)
+    public function __construct(Configuration $config, $id)
     {
-        $this->entityClass = $entityClass;
+        $this->config = $config;
         $this->id = $id;
-    }
-
-    /**
-     * Returns the entity class name
-     *
-     * @return string
-     */
-    public function getEntityClass()
-    {
-        return $this->entityClass;
     }
 
     /**

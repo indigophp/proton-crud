@@ -38,43 +38,30 @@ abstract class Controller
     protected $commandBus;
 
     /**
-     * @var string
+     * @var Configuration
      */
-    protected $entityClass;
+    protected $config;
 
     /**
      * @var string
      */
     protected $route;
 
-    /**
-     * @var array
-     */
-    protected $views = [
-        'create' => 'create.twig',
-        'read'   => 'read.twig',
-        'update' => 'update.twig',
-        'list'   => 'list.twig',
-    ];
 
     /**
      * @param \Twig_Environment $twig
-     * @param CommandBus        $em
+     * @param CommandBus        $commandBus
+     * @param Configuration     $config
      */
     public function __construct(
         \Twig_Environment $twig,
-        CommandBus $commandBus
+        CommandBus $commandBus,
+        Configuration $config
     ) {
         $this->twig = $twig;
         $this->commandBus = $commandBus;
+        $this->config = $config;
 
-        if (!isset($this->entityClass)) {
-            throw new \LogicException('The variable $entityClass must be set');
-        }
-
-        if (!class_exists($this->entityClass)) {
-            throw new \LogicException(sprintf('The entity class "%s" does not exist', $this->entityClass));
-        }
 
         if (!isset($this->route)) {
             throw new \LogicException('The variable $route must be set');
@@ -98,7 +85,7 @@ abstract class Controller
             $form->populate($request->request->all());
         }
 
-        $response->setContent($this->twig->render($this->views['create'], [
+        $response->setContent($this->twig->render($this->config->getViewFor('create'), [
             'form' => $form,
         ]));
 
@@ -140,7 +127,7 @@ abstract class Controller
             $fields = $result->getValidated();
             $data = array_intersect_key($rawData, array_flip($fields));
 
-            $command = new Command\CreateEntity($this->entityClass, $data);
+            $command = new Command\CreateEntity($this->config,  $data);
 
             $this->commandBus->handle($command);
 
@@ -165,12 +152,12 @@ abstract class Controller
      */
     public function read(Request $request, Response $response, array $args)
     {
-        $query = new Query\FindEntity($this->entityClass, $args['id']);
+        $query = new Query\FindEntity($this->config, $args['id']);
 
         $entity = $this->commandBus->handle($query);
 
         if ($entity) {
-            $response->setContent($this->twig->render($this->views['read'], [
+            $response->setContent($this->twig->render($this->config->getViewFor('read'), [
                 'entity' => $entity,
             ]));
 
@@ -193,13 +180,13 @@ abstract class Controller
     {
         $form = $this->createUpdateForm();
 
-        $query = new Query\LoadEntity($this->entityClass, $args['id']);
+        $query = new Query\LoadEntity($this->config, $args['id']);
 
         $data = $this->commandBus->handle($query);
 
         $form->populate($data);
 
-        $response->setContent($this->twig->render($this->views['update'], [
+        $response->setContent($this->twig->render($this->config->getViewFor('update'), [
             'form'   => $form,
             'entity' => $entity,
         ]));
@@ -231,7 +218,7 @@ abstract class Controller
 
         $result = $validator->run($rawData);
 
-        $query = new Query\FindEntity($this->entityClass, $args['id']);
+        $query = new Query\FindEntity($this->config, $args['id']);
 
         $entity = $this->commandBus->handle($query);
 
@@ -262,12 +249,12 @@ abstract class Controller
      */
     public function delete(Request $request, Response $response, array $args)
     {
-        $query = new Query\FindEntity($this->entityClass, $args['id']);
+        $query = new Query\FindEntity($this->config, $args['id']);
 
         $entity = $this->commandBus->handle($query);
 
         if ($entity) {
-            $command = new Command\DeleteEntity($entity);
+            $command = new Command\DeleteEntity($this->config, $entity);
 
             $this->commandBus->handle($command);
         }
@@ -286,7 +273,7 @@ abstract class Controller
      */
     public function index(Request $request, Response $response, array $args)
     {
-        $response->setContent($this->twig->render($this->views['list']));
+        $response->setContent($this->twig->render($this->config->getViewFor('list')));
 
         return $response;
     }
