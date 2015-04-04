@@ -127,6 +127,18 @@ class Configuration
     }
 
     /**
+     * Checks if there is a custom handler registered for a command
+     *
+     * @param string $command
+     *
+     * @return boolean
+     */
+    public function hasHandlerFor($command)
+    {
+        return isset($this->handlerMap[$command]);
+    }
+
+    /**
      * Returns the list of views
      *
      * @return array
