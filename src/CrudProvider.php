@@ -42,7 +42,7 @@ abstract class CrudProvider extends ServiceProvider
             $handlers = array_flip($handlers);
 
             foreach ($handlers as $handler => &$commandOrQuery) {
-                $commandOrQuery = $this->config->getName().$commandOrQuery;
+                $commandOrQuery = $this->config->getName().'.'.$commandOrQuery;
             }
 
             $handlers = array_flip($handlers);
