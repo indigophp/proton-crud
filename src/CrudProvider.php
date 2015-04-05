@@ -30,7 +30,7 @@ abstract class CrudProvider extends ServiceProvider
         $this->config = $this->getConfiguration();
 
         $this->provides = [
-            $this->config->getServiceName().'.controller',
+            $this->config->getName().'.controller',
         ];
     }
 
@@ -42,7 +42,7 @@ abstract class CrudProvider extends ServiceProvider
             $handlers = array_flip($handlers);
 
             foreach ($handlers as $handler => &$commandOrQuery) {
-                $commandOrQuery = $this->config->getServiceName().$commandOrQuery;
+                $commandOrQuery = $this->config->getName().$commandOrQuery;
             }
 
             $handlers = array_flip($handlers);
@@ -51,7 +51,7 @@ abstract class CrudProvider extends ServiceProvider
                 ->withMethodCall('addHandlers', [$handlers]);
         }
 
-        $this->getContainer()->add($this->config->getServiceName().'.controller', $this->config->getControllerClass())
+        $this->getContainer()->add($this->config->getName().'.controller', $this->config->getControllerClass())
             ->withArgument('Twig_Environment')
             ->withArgument('crud.command_bus')
             ->withArgument($this->config);
