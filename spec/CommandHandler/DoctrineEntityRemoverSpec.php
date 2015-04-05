@@ -4,6 +4,7 @@ namespace spec\Proton\Crud\CommandHandler;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Proton\Crud\Command\DeleteEntity;
+use Proton\Crud\Stub\Entity;
 use PhpSpec\ObjectBehavior;
 
 class DoctrineEntityRemoverSpec extends ObjectBehavior
@@ -18,10 +19,8 @@ class DoctrineEntityRemoverSpec extends ObjectBehavior
         $this->shouldHaveType('Proton\Crud\CommandHandler\DoctrineEntityRemover');
     }
 
-    function it_handles_a_delete_command(DeleteEntity $command, EntityManagerInterface $em)
+    function it_handles_a_delete_command(Entity $entity, DeleteEntity $command, EntityManagerInterface $em)
     {
-        $entity = new \stdClass;
-
         $command->getEntity()->willReturn($entity);
 
         $em->remove($entity)->shouldBeCalled();

@@ -5,6 +5,7 @@ namespace spec\Proton\Crud\QueryHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Indigo\Hydra\Hydrator;
+use Proton\Crud\Stub\Entity;
 use Proton\Crud\Query\LoadEntity;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -21,15 +22,14 @@ class DoctrineEntityLoaderSpec extends ObjectBehavior
         $this->shouldHaveType('Proton\Crud\QueryHandler\DoctrineEntityLoader');
     }
 
-    function it_handles_a_load_query(LoadEntity $query, EntityRepository $repository, EntityManagerInterface $em, Hydrator $hydra)
+    function it_handles_a_load_query(Entity $entity, LoadEntity $query, EntityRepository $repository, EntityManagerInterface $em, Hydrator $hydra)
     {
-        $entity = new \stdClass;
-        $query->getEntityClass()->willReturn('stdClass');
+        $query->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
         $query->getId()->willReturn(1);
 
         $repository->find(1)->willReturn($entity);
 
-        $em->getRepository('stdClass')->willReturn($repository);
+        $em->getRepository('Proton\Crud\Stub\Entity')->willReturn($repository);
 
         $hydra->extract($entity)->shouldBeCalled();
 
@@ -38,12 +38,12 @@ class DoctrineEntityLoaderSpec extends ObjectBehavior
 
     function it_returns_an_empty_array_when_no_entity_found(LoadEntity $query, EntityRepository $repository, EntityManagerInterface $em)
     {
-        $query->getEntityClass()->willReturn('stdClass');
+        $query->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
         $query->getId()->willReturn(1);
 
         $repository->find(1)->willReturn(null);
 
-        $em->getRepository('stdClass')->willReturn($repository);
+        $em->getRepository('Proton\Crud\Stub\Entity')->willReturn($repository);
 
         $this->handle($query)->shouldReturn([]);
     }

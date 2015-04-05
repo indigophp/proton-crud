@@ -12,7 +12,7 @@ class ConfigurationSpec extends ObjectBehavior
         $this->beConstructedWith(
             'name',
             'controllerClass',
-            'entityClass',
+            'Proton\Crud\Stub\Entity',
             '/route',
             ['command' => 'handler']
         );
@@ -35,7 +35,7 @@ class ConfigurationSpec extends ObjectBehavior
 
     function it_has_an_entity_class()
     {
-        $this->getEntityClass()->shouldReturn('entityClass');
+        $this->getEntityClass()->shouldReturn('Proton\Crud\Stub\Entity');
     }
 
     function it_has_a_route()

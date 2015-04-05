@@ -3,13 +3,14 @@
 namespace spec\Proton\Crud\Command;
 
 use Proton\Crud\Configuration;
+use Proton\Crud\Stub\Entity;
 use spec\Proton\Crud\CommandBehavior;
 
 class DeleteEntitySpec extends CommandBehavior
 {
-    function let(Configuration $config)
+    function let(Configuration $config, Entity $entity)
     {
-        $this->beConstructedWith($config, new \stdClass);
+        $this->beConstructedWith($config, $entity);
     }
 
     function it_is_initializable()
@@ -19,6 +20,6 @@ class DeleteEntitySpec extends CommandBehavior
 
     function it_has_an_entity()
     {
-        $this->getEntity()->shouldHaveType('stdClass');
+        $this->getEntity()->shouldHaveType('Proton\Crud\Stub\Entity');
     }
 }

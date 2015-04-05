@@ -5,6 +5,7 @@ namespace spec\Proton\Crud\CommandHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Indigo\Hydra\Hydrator;
 use Proton\Crud\Command\UpdateEntity;
+use Proton\Crud\Stub\Entity;
 use PhpSpec\ObjectBehavior;
 
 class DoctrineEntityUpdaterSpec extends ObjectBehavior
@@ -19,9 +20,8 @@ class DoctrineEntityUpdaterSpec extends ObjectBehavior
         $this->shouldHaveType('Proton\Crud\CommandHandler\DoctrineEntityUpdater');
     }
 
-    function it_handles_an_update_command(UpdateEntity $command, EntityManagerInterface $em, Hydrator $hydra)
+    function it_handles_an_update_command(Entity $entity, UpdateEntity $command, EntityManagerInterface $em, Hydrator $hydra)
     {
-        $entity = new \stdClass;
         $data = ['data' => 'atad'];
 
         $command->getEntity()->willReturn($entity);

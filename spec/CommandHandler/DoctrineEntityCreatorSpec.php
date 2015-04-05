@@ -22,7 +22,7 @@ class DoctrineEntityCreatorSpec extends ObjectBehavior
 
     function it_handles_a_create_command(CreateEntity $command, EntityManagerInterface $em, Hydrator $hydra)
     {
-        $entityClass = 'stdClass';
+        $entityClass = 'Proton\Crud\Stub\Entity';
 
         $command->getData()->willReturn([
             'estimatedEnd' => 'now',

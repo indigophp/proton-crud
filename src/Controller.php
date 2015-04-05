@@ -42,11 +42,6 @@ abstract class Controller
      */
     protected $config;
 
-    /**
-     * @var string
-     */
-    protected $route;
-
 
     /**
      * @param \Twig_Environment $twig

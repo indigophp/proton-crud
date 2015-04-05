@@ -19,8 +19,8 @@ class FindAllEntitiesSpec extends CommandBehavior
 
     function it_has_an_entity_class(Configuration $config)
     {
-        $config->getEntityClass()->willReturn('stdClass');
+        $config->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
 
-        $this->getEntityClass()->shouldReturn('stdClass');
+        $this->getEntityClass()->shouldReturn('Proton\Crud\Stub\Entity');
     }
 }

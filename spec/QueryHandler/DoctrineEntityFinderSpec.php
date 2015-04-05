@@ -21,12 +21,12 @@ class DoctrineEntityFinderSpec extends ObjectBehavior
 
     function it_handles_a_find_query(FindEntity $query, EntityRepository $repository, EntityManagerInterface $em)
     {
-        $query->getEntityClass()->willReturn('stdClass');
+        $query->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
         $query->getId()->willReturn(1);
 
         $repository->find(1)->shouldBeCalled();
 
-        $em->getRepository('stdClass')->willReturn($repository);
+        $em->getRepository('Proton\Crud\Stub\Entity')->willReturn($repository);
 
         $this->handle($query);
     }

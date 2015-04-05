@@ -21,11 +21,11 @@ class DoctrineAllEntityFinderSpec extends ObjectBehavior
 
     function it_handles_a_find_all_query(FindAllEntities $query, EntityRepository $repository, EntityManagerInterface $em)
     {
-        $query->getEntityClass()->willReturn('stdClass');
+        $query->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
 
         $repository->findAll()->shouldBeCalled();
 
-        $em->getRepository('stdClass')->willReturn($repository);
+        $em->getRepository('Proton\Crud\Stub\Entity')->willReturn($repository);
 
         $this->handle($query);
     }

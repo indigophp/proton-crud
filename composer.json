@@ -37,6 +37,9 @@
         }
     },
     "autoload-dev": {
+        "psr-4": {
+            "Proton\\Crud\\Stub\\": "stubs/"
+        },
         "files": [
             "spec/CommandBehavior.php"
         ]
