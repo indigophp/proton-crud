@@ -20,8 +20,13 @@ use Proton\Crud\Query\LoadEntity;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DoctrineEntityLoader extends EntityManagerAware
+class DoctrineEntityLoader
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $em;
+
     /**
      * @var Hydrator
      */
@@ -42,16 +47,17 @@ class DoctrineEntityLoader extends EntityManagerAware
      *
      * @param LoadEntity $query
      *
-     * @return object|null
+     * @return array|null
      */
     public function handle(LoadEntity $query)
     {
-        $entity = $this->em->getRepository($query->getEntityClass())->find($query->getId());
+        $entityClass = $query->getEntityClass();
+        $id = $query->getId();
+
+        $entity = $this->em->getRepository($entityClass)->find($id);
 
         if ($entity) {
             return $this->hydrator->extract($entity);
         }
-
-        return [];
     }
 }

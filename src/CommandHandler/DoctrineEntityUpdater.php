@@ -11,6 +11,8 @@
 
 namespace Proton\Crud\CommandHandler;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Indigo\Hydra\Hydrator;
 use Proton\Crud\Command\UpdateEntity;
 
 /**
@@ -18,8 +20,28 @@ use Proton\Crud\Command\UpdateEntity;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DoctrineEntityUpdater extends EntityModifier
+class DoctrineEntityUpdater
 {
+    /**
+     * @var Hydrator
+     */
+    protected $hydrator;
+
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $em;
+
+    /**
+     * @param Hydrator               $hydrator
+     * @param EntityManagerInterface $em
+     */
+    public function __construct(Hydrator $hydrator, EntityManagerInterface $em)
+    {
+        $this->hydrator = $hydrator;
+        $this->em = $em;
+    }
+
     /**
      * Updates an entity
      *

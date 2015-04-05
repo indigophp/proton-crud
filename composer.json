@@ -24,7 +24,6 @@
         "fuelphp/fieldset": "dev-master",
         "fuelphp/validation": "dev-master",
         "indigophp/hydra": "0.1.*@dev",
-        "ocramius/code-generator-utils": "~0.3",
         "doctrine/orm": "~2.4"
     },
     "require-dev": {

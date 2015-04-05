@@ -10,9 +10,9 @@ use PhpSpec\ObjectBehavior;
 
 class DoctrineEntityUpdaterSpec extends ObjectBehavior
 {
-    function let(EntityManagerInterface $em, Hydrator $hydra)
+    function let(Hydrator $hydra, EntityManagerInterface $em)
     {
-        $this->beConstructedWith($em, $hydra);
+        $this->beConstructedWith($hydra, $em);
     }
 
     function it_is_initializable()
@@ -20,7 +20,7 @@ class DoctrineEntityUpdaterSpec extends ObjectBehavior
         $this->shouldHaveType('Proton\Crud\CommandHandler\DoctrineEntityUpdater');
     }
 
-    function it_handles_an_update_command(Entity $entity, UpdateEntity $command, EntityManagerInterface $em, Hydrator $hydra)
+    function it_handles_an_update_command(Entity $entity, UpdateEntity $command, Hydrator $hydra, EntityManagerInterface $em)
     {
         $data = ['data' => 'atad'];
 
@@ -29,6 +29,7 @@ class DoctrineEntityUpdaterSpec extends ObjectBehavior
 
         $hydra->hydrate($entity, $data)->shouldBeCalled();
         $hydra->extract($entity)->willReturn([]);
+
         $em->flush()->shouldBeCalled();
 
         $this->handle($command);

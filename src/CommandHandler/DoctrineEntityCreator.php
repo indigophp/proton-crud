@@ -11,6 +11,9 @@
 
 namespace Proton\Crud\CommandHandler;
 
+use Doctrine\Instantiator\InstantiatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Indigo\Hydra\Hydrator;
 use Proton\Crud\Command\CreateEntity;
 
 /**
@@ -18,8 +21,35 @@ use Proton\Crud\Command\CreateEntity;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DoctrineEntityCreator extends EntityModifier
+class DoctrineEntityCreator
 {
+    /**
+     * @var InstantiatorInterface
+     */
+    protected $instantiator;
+
+    /**
+     * @var Hydrator
+     */
+    protected $hydrator;
+
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $em;
+
+    /**
+     * @param InstantiatorInterface  $instantiator
+     * @param Hydrator               $hydrator
+     * @param EntityManagerInterface $em
+     */
+    public function __construct(InstantiatorInterface $instantiator, Hydrator $hydrator, EntityManagerInterface $em)
+    {
+        $this->instantiator = $instantiator;
+        $this->hydrator = $hydrator;
+        $this->em = $em;
+    }
+
     /**
      * Creates a new entity
      *
@@ -28,7 +58,7 @@ class DoctrineEntityCreator extends EntityModifier
     public function handle(CreateEntity $command)
     {
         $entityClass = $command->getEntityClass();
-        $entity = new $entityClass;
+        $entity = $this->instantiator->instantiate($entityClass);
         $data = $command->getData();
 
         // UGLY WORKAROUND BEGINS

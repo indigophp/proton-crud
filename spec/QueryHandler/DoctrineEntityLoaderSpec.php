@@ -24,6 +24,8 @@ class DoctrineEntityLoaderSpec extends ObjectBehavior
 
     function it_handles_a_load_query(Entity $entity, LoadEntity $query, EntityRepository $repository, EntityManagerInterface $em, Hydrator $hydra)
     {
+        $data = ['data' => 'atad'];
+
         $query->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
         $query->getId()->willReturn(1);
 
@@ -31,12 +33,12 @@ class DoctrineEntityLoaderSpec extends ObjectBehavior
 
         $em->getRepository('Proton\Crud\Stub\Entity')->willReturn($repository);
 
-        $hydra->extract($entity)->shouldBeCalled();
+        $hydra->extract($entity)->willReturn($data);
 
-        $this->handle($query);
+        $this->handle($query)->shouldReturn($data);
     }
 
-    function it_returns_an_empty_array_when_no_entity_found(LoadEntity $query, EntityRepository $repository, EntityManagerInterface $em)
+    function it_returns_null_when_no_entity_found(LoadEntity $query, EntityRepository $repository, EntityManagerInterface $em)
     {
         $query->getEntityClass()->willReturn('Proton\Crud\Stub\Entity');
         $query->getId()->willReturn(1);
@@ -45,6 +47,6 @@ class DoctrineEntityLoaderSpec extends ObjectBehavior
 
         $em->getRepository('Proton\Crud\Stub\Entity')->willReturn($repository);
 
-        $this->handle($query)->shouldReturn([]);
+        $this->handle($query)->shouldReturn(null);
     }
 }

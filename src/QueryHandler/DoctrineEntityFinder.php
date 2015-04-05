@@ -11,6 +11,7 @@
 
 namespace Proton\Crud\QueryHandler;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Proton\Crud\Query\FindEntity;
 
 /**
@@ -18,8 +19,21 @@ use Proton\Crud\Query\FindEntity;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DoctrineEntityFinder extends EntityManagerAware
+class DoctrineEntityFinder
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $em;
+
+    /**
+     * @param EntityManagerInterface $em
+     */
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     /**
      * Returns an entity
      *
@@ -29,6 +43,9 @@ class DoctrineEntityFinder extends EntityManagerAware
      */
     public function handle(FindEntity $query)
     {
-        return $this->em->getRepository($query->getEntityClass())->find($query->getId());
+        $entityClass = $query->getEntityClass();
+        $id = $query->getId();
+
+        return $this->em->getRepository($entityClass)->find($id);
     }
 }
