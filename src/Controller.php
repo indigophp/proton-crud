@@ -268,7 +268,13 @@ abstract class Controller
      */
     public function index(Request $request, Response $response, array $args)
     {
-        $response->setContent($this->twig->render($this->config->getViewFor('list')));
+        $query = new Query\FindAllEntities($this->config);
+
+        $entities = $this->commandBus->handle($query);
+
+        $response->setContent($this->twig->render($this->config->getViewFor('list'), [
+            'entities' => $entities
+        ]));
 
         return $response;
     }
