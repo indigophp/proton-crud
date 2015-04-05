@@ -178,7 +178,6 @@ abstract class Controller
 
         $response->setContent($this->twig->render($this->config->getViewFor('update'), [
             'form'   => $form,
-            'entity' => $entity,
         ]));
 
         return $response;
