@@ -13,16 +13,17 @@ namespace Proton\Crud\Command;
 
 use League\Tactician\Plugins\NamedCommand\NamedCommand;
 use Proton\Crud\Configuration;
-use Proton\Crud\ConfigurationAwareCommand;
+use Proton\Crud\ConfigurationAware;
+use Proton\Crud\CrudCommand;
 
 /**
  * Deletes an entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DeleteEntity implements NamedCommand
+class DeleteEntity implements NamedCommand, ConfigurationAware
 {
-    use ConfigurationAwareCommand;
+    use CrudCommand;
 
     /**
      * Entity object

@@ -13,16 +13,17 @@ namespace Proton\Crud\Command;
 
 use League\Tactician\Plugins\NamedCommand\NamedCommand;
 use Proton\Crud\Configuration;
-use Proton\Crud\ConfigurationAwareCommand;
+use Proton\Crud\ConfigurationAware;
+use Proton\Crud\CrudCommand;
 
 /**
  * Creates a new entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class CreateEntity implements NamedCommand
+class CreateEntity implements NamedCommand, ConfigurationAware
 {
-    use ConfigurationAwareCommand;
+    use CrudCommand;
 
     /**
      * @var array
@@ -37,6 +38,16 @@ class CreateEntity implements NamedCommand
     {
         $this->config = $config;
         $this->data = $data;
+    }
+
+    /**
+     * Returns the entity class
+     *
+     * @return string
+     */
+    public function getEntityClass()
+    {
+        return $this->config->getEntityClass();
     }
 
     /**

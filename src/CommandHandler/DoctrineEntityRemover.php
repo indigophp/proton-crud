@@ -11,6 +11,7 @@
 
 namespace Proton\Crud\CommandHandler;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Proton\Crud\Command\DeleteEntity;
 
 /**
@@ -18,8 +19,21 @@ use Proton\Crud\Command\DeleteEntity;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class DoctrineEntityRemover extends EntityModifier
+class DoctrineEntityRemover
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $em;
+
+    /**
+     * @param EntityManagerInterface $em
+     */
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     /**
      * Removes an entity
      *

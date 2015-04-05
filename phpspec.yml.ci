@@ -1,0 +1,13 @@
+suites:
+  crud_suite:
+    namespace: Proton\Crud
+    psr4_prefix: Proton\Crud
+extensions:
+  - PhpSpec\Extension\CodeCoverageExtension
+formatter.name: pretty
+code_coverage:
+  format: clover
+  output: build/coverage.xml
+  blacklist_files:
+    - src/CrudProvider.php
+    - src/CrudServiceProvider.php

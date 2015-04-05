@@ -27,7 +27,7 @@ class DoctrineEntityCreator extends EntityModifier
      */
     public function handle(CreateEntity $command)
     {
-        $entityClass = $command->getConfig()->getEntityClass();
+        $entityClass = $command->getEntityClass();
         $entity = new $entityClass;
         $data = $command->getData();
 

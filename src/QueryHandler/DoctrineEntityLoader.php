@@ -46,7 +46,7 @@ class DoctrineEntityLoader extends EntityManagerAware
      */
     public function handle(LoadEntity $query)
     {
-        $entity = $this->em->getRepository($query->getConfig()->getEntityClass())->find($query->getId());
+        $entity = $this->em->getRepository($query->getEntityClass())->find($query->getId());
 
         if ($entity) {
             return $this->hydrator->extract($entity);

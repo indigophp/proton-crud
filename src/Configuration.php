@@ -21,7 +21,7 @@ class Configuration
     /**
      * @var string
      */
-    protected $serviceName;
+    protected $name;
 
     /**
      * @var string
@@ -54,7 +54,7 @@ class Configuration
     ];
 
     /**
-     * @param string $serviceName
+     * @param string $name
      * @param string $controllerClass
      * @param string $entityClass
      * @param string $route
@@ -62,28 +62,29 @@ class Configuration
      * @param array  $views
      */
     public function __construct(
-        $serviceName,
+        $name,
         $controllerClass,
         $entityClass,
         $route,
         array $handlerMap = [],
         array $views = []
     ) {
-        $this->serviceName = $serviceName;
+        $this->name = $name;
         $this->controllerClass = $controllerClass;
         $this->entityClass = $entityClass;
-        $this->handlerMap = array_merge($this->handlerMap, $handlerMap);
+        $this->route = $route;
+        $this->handlerMap = $handlerMap;
         $this->view = array_merge($this->views, $views);
     }
 
     /**
-     * Returns the service name
+     * Returns the name
      *
      * @return string
      */
-    public function getServiceName()
+    public function getName()
     {
-        return $this->serviceName;
+        return $this->name;
     }
 
     /**

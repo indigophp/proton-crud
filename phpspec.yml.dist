@@ -1,0 +1,6 @@
+    psr4_prefix: Proton\Crud
+suites:
+  service_suite:
+    namespace: Indigo\Service
+    psr4_prefix: Indigo\Service
+formatter.name: pretty

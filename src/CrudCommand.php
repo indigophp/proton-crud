@@ -12,11 +12,11 @@
 namespace Proton\Crud;
 
 /**
- * Exposes a configuration
+ * Commands and Queries accept a configuration object
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-trait ConfigurationAwareCommand
+trait CrudCommand
 {
     /**
      * @var Configuration
@@ -24,9 +24,7 @@ trait ConfigurationAwareCommand
     protected $config;
 
     /**
-     * Returns the configuration
-     *
-     * @return Configuration
+     * {@inheritdoc}
      */
     public function getConfig()
     {
@@ -42,7 +40,7 @@ trait ConfigurationAwareCommand
         $name = $this->getOriginalCommandName();
 
         if ($this->config->hasHandlerFor($name)) {
-            $service = $this->config->getServiceName();
+            $service = $this->config->getName();
         }
 
         return $service.'.'.$name;
@@ -55,8 +53,6 @@ trait ConfigurationAwareCommand
      */
     public function getOriginalCommandName()
     {
-        $class = explode('\\', __CLASS__);
-
-        return lcfirst(array_pop($class));
+        return lcfirst(substr(strrchr(get_class($this), '\\'), 1));
     }
 }

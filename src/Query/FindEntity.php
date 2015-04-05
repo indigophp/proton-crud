@@ -13,16 +13,17 @@ namespace Proton\Crud\Query;
 
 use League\Tactician\Plugins\NamedCommand\NamedCommand;
 use Proton\Crud\Configuration;
-use Proton\Crud\ConfigurationAwareCommand;
+use Proton\Crud\ConfigurationAware;
+use Proton\Crud\CrudCommand;
 
 /**
  * Finds an entity
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class FindEntity implements NamedCommand
+class FindEntity implements NamedCommand, ConfigurationAware
 {
-    use ConfigurationAwareCommand;
+    use CrudCommand;
 
     /**
      * @var integer
@@ -37,6 +38,16 @@ class FindEntity implements NamedCommand
     {
         $this->config = $config;
         $this->id = $id;
+    }
+
+    /**
+     * Returns the entity class
+     *
+     * @return string
+     */
+    public function getEntityClass()
+    {
+        return $this->config->getEntityClass();
     }
 
     /**
