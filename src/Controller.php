@@ -121,7 +121,7 @@ abstract class Controller
 
             $this->commandBus->handle($command);
 
-            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->config->getRoute()));
+            return new RedirectResponse(sprintf('%s%s', $request->getBaseUrl(), $this->config->getRoute()));
         }
 
         $request->attributes->set('repopulate', true);
@@ -219,7 +219,7 @@ abstract class Controller
 
             $this->commandBus->handle($command);
 
-            return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->config->getRoute()));
+            return new RedirectResponse(sprintf('%s%s', $request->getBaseUrl(), $this->config->getRoute()));
         }
 
         $response = $this->update($request, $response, $args);
@@ -248,7 +248,7 @@ abstract class Controller
             $this->commandBus->handle($command);
         }
 
-        return new RedirectResponse(sprintf('%s%s', $request->attributes->get('stack.url_map.prefix', ''), $this->config->getRoute()));
+        return new RedirectResponse(sprintf('%s%s', $request->getBaseUrl(), $this->config->getRoute()));
     }
 
     /**
