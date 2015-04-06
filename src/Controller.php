@@ -207,13 +207,13 @@ abstract class Controller
 
         $result = $validator->run($rawData);
 
-        $query = new Query\FindEntity($this->config, $args['id']);
-
-        $entity = $this->commandBus->handle($query);
-
         if ($result->isValid()) {
             $fields = $result->getValidated();
             $data = array_intersect_key($rawData, array_flip($fields));
+
+            $query = new Query\FindEntity($this->config, $args['id']);
+
+            $entity = $this->commandBus->handle($query);
 
             $command = new Command\UpdateEntity($this->config, $entity, $data);
 
