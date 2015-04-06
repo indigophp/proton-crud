@@ -38,6 +38,7 @@ class CrudServiceProvider extends ServiceProvider
         'crud.createEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
         'crud.updateEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
         'crud.deleteEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
+        'crud.saveEntity'      => 'Proton\Crud\CommandHandler\DoctrineEntitySaver',
         'crud.findEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
         'crud.findAllEntities' => 'Proton\Crud\QueryHandler\DoctrineAllEntityFinder',
         'crud.loadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
