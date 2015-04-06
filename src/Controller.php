@@ -215,7 +215,7 @@ abstract class Controller
             $fields = $result->getValidated();
             $data = array_intersect_key($rawData, array_flip($fields));
 
-            $command = new Command\UpdateEntity($entity, $data);
+            $command = new Command\UpdateEntity($this->config, $entity, $data);
 
             $this->commandBus->handle($command);
 
