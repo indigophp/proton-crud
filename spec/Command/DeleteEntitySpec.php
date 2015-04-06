@@ -18,8 +18,8 @@ class DeleteEntitySpec extends CommandBehavior
         $this->shouldHaveType('Proton\Crud\Command\DeleteEntity');
     }
 
-    function it_has_an_entity()
+    function it_has_an_entity(Entity $entity)
     {
-        $this->getEntity()->shouldHaveType('Proton\Crud\Stub\Entity');
+        $this->getEntity()->shouldReturn($entity);
     }
 }
