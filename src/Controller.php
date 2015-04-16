@@ -14,6 +14,8 @@ namespace Proton\Crud;
 use Doctrine\ORM\EntityManagerInterface;
 use Fuel\Fieldset\Form;
 use Fuel\Validation\Validator;
+use Indigo\Crud\Command;
+use Indigo\Crud\Query;
 use League\Route\Http\Exception\NotFoundException;
 use League\Tactician\CommandBus;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,15 +61,13 @@ abstract class Controller
     }
 
     /**
-     * CREATE controller
-     *
      * @param Request  $request
      * @param Response $response
      * @param array    $args
      *
      * @return Response
      */
-    public function create(Request $request, Response $response, array $args)
+    public function createAction(Request $request, Response $response, array $args)
     {
         $form = $this->createCreateForm();
 
@@ -97,15 +97,13 @@ abstract class Controller
     abstract protected function createValidator();
 
     /**
-     * CREATE handler
-     *
      * @param Request  $request
      * @param Response $response
      * @param array    $args
      *
      * @return Response
      */
-    public function processCreate(Request $request, Response $response, array $args)
+    public function create(Request $request, Response $response, array $args)
     {
         $validator = $this->createValidator();
 
@@ -121,7 +119,7 @@ abstract class Controller
 
             $this->commandBus->handle($command);
 
-            return new RedirectResponse(sprintf('%s%s', $request->getBaseUrl(), $this->config->getRoute()));
+            return new RedirectResponse($request->getUri());
         }
 
         $request->attributes->set('repopulate', true);
@@ -132,8 +130,6 @@ abstract class Controller
     }
 
     /**
-     * READ controller
-     *
      * @param Request  $request
      * @param Response $response
      * @param array    $args
@@ -158,15 +154,13 @@ abstract class Controller
     }
 
     /**
-     * UPDATE controller
-     *
      * @param Request  $request
      * @param Response $response
      * @param array    $args
      *
      * @return Response
      */
-    public function update(Request $request, Response $response, array $args)
+    public function updateAction(Request $request, Response $response, array $args)
     {
         $form = $this->createUpdateForm();
 
@@ -191,15 +185,13 @@ abstract class Controller
     abstract protected function createUpdateForm();
 
     /**
-     * UPDATE handler
-     *
      * @param Request  $request
      * @param Response $response
      * @param array    $args
      *
      * @return Response
      */
-    public function processUpdate(Request $request, Response $response, array $args)
+    public function update(Request $request, Response $response, array $args)
     {
         $validator = $this->createValidator();
 

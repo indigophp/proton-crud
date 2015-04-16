@@ -19,12 +19,11 @@
     "require": {
         "php": ">=5.4",
         "twig/twig": "~1.0",
-        "league/tactician": "^0.5",
+        "indigophp/crud": "dev-master",
+        "indigophp/crud-doctrine": "dev-master",
         "league/tactician-container": "dev-cleanup as 0.1",
         "fuelphp/fieldset": "dev-master",
-        "fuelphp/validation": "dev-master",
-        "indigophp/hydra": "0.1.*@dev",
-        "doctrine/orm": "~2.4"
+        "fuelphp/validation": "dev-master"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.1",
@@ -38,10 +37,7 @@
     "autoload-dev": {
         "psr-4": {
             "Proton\\Crud\\Stub\\": "stubs/"
-        },
-        "files": [
-            "spec/CommandBehavior.php"
-        ]
+        }
     },
     "extra": {
         "branch-alias": {

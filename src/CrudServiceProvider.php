@@ -35,13 +35,13 @@ class CrudServiceProvider extends ServiceProvider
      * @var array
      */
     protected $defaultHandlerMap = [
-        'crud.createEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityCreator',
-        'crud.updateEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityUpdater',
-        'crud.deleteEntity'    => 'Proton\Crud\CommandHandler\DoctrineEntityRemover',
-        'crud.saveEntity'      => 'Proton\Crud\CommandHandler\DoctrineEntitySaver',
-        'crud.findEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityFinder',
-        'crud.findAllEntities' => 'Proton\Crud\QueryHandler\DoctrineAllEntityFinder',
-        'crud.loadEntity'      => 'Proton\Crud\QueryHandler\DoctrineEntityLoader',
+        'crud.createEntity'    => 'Indigo\Crud\Doctrine\CommandHandler\EntityCreator',
+        'crud.updateEntity'    => 'Indigo\Crud\Doctrine\CommandHandler\EntityUpdater',
+        'crud.deleteEntity'    => 'Indigo\Crud\Doctrine\CommandHandler\EntityRemover',
+        'crud.saveEntity'      => 'Indigo\Crud\Doctrine\CommandHandler\EntitySaver',
+        'crud.findEntity'      => 'Indigo\Crud\Doctrine\QueryHandler\EntityFinder',
+        'crud.findAllEntities' => 'Indigo\Crud\Doctrine\QueryHandler\AllEntityFinder',
+        'crud.loadEntity'      => 'Indigo\Crud\Doctrine\QueryHandler\EntityLoader',
     ];
 
     /**
