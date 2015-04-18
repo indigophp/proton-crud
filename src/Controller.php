@@ -45,12 +45,18 @@ abstract class Controller
     protected $entityClass;
 
     /**
+     * @var string
+     */
+    protected $route;
+
+    /**
      * @var array
      */
     protected $views = [
         'create' => 'create.twig',
         'read'   => 'read.twig',
         'update' => 'update.twig',
+        'list'   => 'list.twig',
     ];
 
     /**
@@ -64,6 +70,10 @@ abstract class Controller
 
         if (!isset($this->entityClass)) {
             throw new \LogicException('Entity class property must be defined');
+        }
+
+        if (!isset($this->route)) {
+            throw new \LogicException('Route property must be defined');
         }
     }
 
@@ -132,7 +142,7 @@ abstract class Controller
 
         $request->attributes->set('repopulate', true);
 
-        $response = $this->create($request, $response, $args);
+        $response = $this->createAction($request, $response, $args);
 
         return $response;
     }
@@ -178,6 +188,7 @@ abstract class Controller
     public function updateAction(Request $request, Response $response, array $args)
     {
         $form = $this->createUpdateForm();
+        $form->setAttribute('action', sprintf('%s/%s', $this->route, $args['id']));
 
         $entity = $this->em->getRepository($this->entityClass)->find($args['id']);
 
@@ -203,7 +214,7 @@ abstract class Controller
      *
      * @return array
      */
-    protected function loadData($entity);
+    abstract protected function loadData($entity);
 
     /**
      * UPDATE form
@@ -237,10 +248,10 @@ abstract class Controller
 
             $this->em->flush();
 
-            return new RedirectResponse(sprintf('%s', $request->getUri()));
+            return new RedirectResponse($request->getUri());
         }
 
-        $response = $this->update($request, $response, $args);
+        $response = $this->updateAction($request, $response, $args);
 
         return $response;
     }
@@ -251,7 +262,7 @@ abstract class Controller
      * @param object $entity
      * @param array  $data
      */
-    protected function updateEntity($entity, array $data);
+    abstract protected function updateEntity($entity, array $data);
 
     /**
      * Delete controller
@@ -271,7 +282,7 @@ abstract class Controller
             $this->em->flush();
         }
 
-        return new RedirectResponse(sprintf('%s', $request->getBaseUrl()));
+        return new RedirectResponse($this->route);
     }
 
     /**
