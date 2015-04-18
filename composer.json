@@ -10,18 +10,9 @@
             "email": "mark.sagikazar@gmail.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/sagikazarmark/tactician-container"
-        }
-    ],
     "require": {
         "php": ">=5.4",
         "twig/twig": "~1.0",
-        "indigophp/crud": "dev-master",
-        "indigophp/crud-doctrine": "dev-master",
-        "league/tactician-container": "dev-cleanup as 0.1",
         "fuelphp/fieldset": "dev-master",
         "fuelphp/validation": "dev-master"
     },
@@ -32,11 +23,6 @@
     "autoload": {
         "psr-4": {
             "Proton\\Crud\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Proton\\Crud\\Stub\\": "stubs/"
         }
     },
     "extra": {
